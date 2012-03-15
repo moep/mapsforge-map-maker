@@ -1,7 +1,9 @@
 package org.mapsforge.mapmaker.gui;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -24,7 +26,9 @@ import org.eclipse.swt.widgets.Text;
 
 public class OptionSelectionWizardPage extends WizardPage {
 	private String inputFilePath;
-
+	private IDialogSettings settings; 
+	final static String SETTINGS_SECTION_NAME = "general";
+	
 	protected Text tfInputFilePath;
 	private FormData fd_text;
 	private Button btnOpenFile;
@@ -32,11 +36,13 @@ public class OptionSelectionWizardPage extends WizardPage {
 	private Button ckboxCreateVectorMap;
 	private Button ckboxCreatePOIs;
 
-	public OptionSelectionWizardPage(String pageName) {
+	public OptionSelectionWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
 		setPageComplete(false);
 		setTitle(pageName);
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
+		this.settings = settings;
+		this.settings.addNewSection("general");
 	}
 
 	@Override
@@ -154,25 +160,28 @@ public class OptionSelectionWizardPage extends WizardPage {
 	}
 
 	void onInputChanged() {
-		System.out.println("onInputChanged");
 		boolean isValid = isPageComplete();
-		
-		// TODO save configuration
 
 		// Show / hide error message
 		if (isValid) {
 			setErrorMessage(null);
+			updateSettings();
 		}
 		
-		setPageComplete(isValid);
-		
-		
+		setPageComplete(isValid);				
 	}
 	
-	
+	private void updateSettings() {
+		IDialogSettings section = this.settings.getSections()[0];
+		section.put("inputFilePath", this.tfInputFilePath.getText());
+		section.put("createVectorMap", this.ckboxCreateVectorMap.getSelection());
+		section.put("createPOIs", this.ckboxCreatePOIs.getSelection());
+		
+		System.out.println("Settings have been updated ");
+	}
+
 	@Override
 	public boolean isPageComplete() {
-		System.out.println("isPageComplete");
 		boolean isValid = true;
 
 		// Input file must be set
@@ -212,5 +221,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 
 		return isValid;
 	}
+	
+	
 
 }

@@ -1,23 +1,36 @@
 package org.mapsforge.mapmaker.gui;
 
+import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 
 public class MainWizard extends Wizard {
+	
 	public MainWizard() {
-		setWindowTitle("window title");
-		//addPage(new TestWizardPage("select file"));
-		addPage(new OptionSelectionWizardPage("select file"));
-		addPage(new POIWizardPage("POI settings"));
+		setWindowTitle("Mapsforge Map Creation Wizard");
+		IDialogSettings settings = new DialogSettings("osmosis parameters");
+		setDialogSettings(settings);
+		
+		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
+		addPage(generalOptionsPage);
+		
+		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
+		addPage(poiOptionsPage);
 	}
-	
-	
+		
 	@Override
 	public boolean performFinish() {
 		System.out.println("Performing finish");
 		return true;
 	}
+	
+	@Override
+	public boolean performCancel() {
+		System.out.println("Canceled");
+		return true;		
+	}
+	
+	
+	
 }

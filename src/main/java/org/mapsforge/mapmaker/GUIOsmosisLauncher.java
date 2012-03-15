@@ -1,5 +1,6 @@
 package org.mapsforge.mapmaker;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -27,21 +28,31 @@ public class GUIOsmosisLauncher {
 		Window.setDefaultImage(new Image(display, "logo.png"));
 		int dialogExitCode = dialog.open();
 		
+		printSettings(w.getDialogSettings());
+		
 		shell.dispose();
 		display.dispose();
 
-//		switch (dialogExitCode) {
-//		case Window.OK:
+		switch (dialogExitCode) {
+		case Window.OK:
 			System.out.println("Launching Osmosis");
 			ProgressGUI progressHandler = ProgressGUI.getInstance();
 			new FakeOsmosis(progressHandler).start();
 			progressHandler.show();
-			
-//		case Window.CANCEL:
-//			System.out.println("Saving configuration");
-//			// TODO offer save configuration if osmosis has finished gracefully
-//			break;
-//		default:
-//		}
+
+		case Window.CANCEL:
+			//System.out.println("Saving configuration");
+			// TODO offer save configuration if osmosis has finished gracefully
+			break;
+		default:
+		}
+	}
+
+	private static void printSettings(IDialogSettings dialogSettings) {
+		System.out.println("General settings:");
+		IDialogSettings generalSection = dialogSettings.getSection("general");
+		System.out.println("input file path: " + generalSection.get("inputFilePath"));
+		System.out.println("create vector map " + generalSection.getBoolean("createVectorMap"));
+		System.out.println("create POIs " + generalSection.getBoolean("createPOIs"));
 	}
 }

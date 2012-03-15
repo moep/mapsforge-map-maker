@@ -8,11 +8,58 @@
 	<packaging>jar</packaging>
 
 	<name>mapmaker</name>
-	<url>http://maven.apache.org</url>
+	<url>http://mapsforge.org</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>linux-x86</id>
+			<properties>
+				<swt.groupId>org.eclipse.swt.gtk.linux</swt.groupId>
+				<swt.artifactId>x86</swt.artifactId>
+				<swt.version>3.3.0-v3346</swt.version>
+			</properties>
+			<activation>
+				<os>
+					<name>Linux</name>
+					<arch>i386</arch>
+				</os>
+			</activation>
+		</profile>
+		<profile>
+			<id>linux-amd64</id>
+			<properties>
+				<swt.groupId>org.eclipse.swt.gtk.linux</swt.groupId>
+				<swt.artifactId>x86_64</swt.artifactId>
+				<swt.version>3.3.0-v3346</swt.version>
+			</properties>
+			<activation>
+				<os>
+					<name>Linux</name>
+					<arch>amd64</arch>
+				</os>
+			</activation>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
@@ -21,7 +68,6 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>net.sf.jpf</groupId>
 			<artifactId>jpf</artifactId>
@@ -33,13 +79,18 @@
 			<version>3.3.0-v3346</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.swt.gtk.linux</groupId>
-			<artifactId>x86</artifactId>
-			<version>3.3.0-v3346</version>
+			<groupId>${swt.groupId}</groupId>
+			<artifactId>${swt.artifactId}</artifactId>
+			<version>${swt.version}</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>swt</groupId>
+			<artifactId>jface</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+
 		<!-- Osmosis dependencies -->
-		
+
 		<dependency>
 			<groupId>osmosis</groupId>
 			<artifactId>osmosis-core</artifactId>
@@ -79,9 +130,10 @@
 			<version>1.3</version>
 		</dependency>
 		<dependency>
-			<groupId>swt</groupId>
-			<artifactId>jface</artifactId>
-			<version>3.0.1</version>
+			<groupId>org.eclipse.swt.gtk.linux</groupId>
+			<artifactId>x86_64</artifactId>
+			<version>3.3.0-v3346</version>
 		</dependency>
 	</dependencies>
+
 </project>
