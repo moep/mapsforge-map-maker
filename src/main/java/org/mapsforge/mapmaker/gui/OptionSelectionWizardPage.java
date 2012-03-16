@@ -172,7 +172,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 	}
 	
 	private void updateSettings() {
-		IDialogSettings section = this.settings.getSections()[0];
+		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
 		section.put("inputFilePath", this.tfInputFilePath.getText());
 		section.put("createVectorMap", this.ckboxCreateVectorMap.getSelection());
 		section.put("createPOIs", this.ckboxCreatePOIs.getSelection());

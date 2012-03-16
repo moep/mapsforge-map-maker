@@ -28,11 +28,14 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	public static ProgressGUI getInstance() {
-		System.out.println("GetInstance");
+		System.out.println("** GetInstance");
 		
 		if (ProgressGUI.instance == null) {
-			return new ProgressGUI();
+			System.out.println("Creating progress gui");
+			ProgressGUI.instance = new ProgressGUI();
+			return ProgressGUI.instance;
 		} else {
+			System.out.println("Returning singleton");
 			return ProgressGUI.instance;
 		}
 	}

@@ -104,7 +104,7 @@ public class POIWizardPage extends WizardPage {
 	}
 	
 	private void updateSettings() {
-		IDialogSettings section = this.settings.getSections()[0];
+		IDialogSettings section = this.settings.getSection("poi");
 		section.put("categoryConfigPath", this.tfCategoryConfigPath.getText());
 		
 		System.out.println("Settings have been updated ");

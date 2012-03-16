@@ -81,7 +81,7 @@ class TaskConfigurationBuilder {
 		case MAP_WRITER:
 			return "mw";
 		case POI_WRITER:
-			return "write-poi";
+			return "poi-writer";
 		default:
 			return "";
 		}

@@ -11,7 +11,9 @@ public class MainWizard extends Wizard {
 		setWindowTitle("Mapsforge Map Creation Wizard");
 		IDialogSettings settings = new DialogSettings("osmosis parameters");
 		setDialogSettings(settings);
-		
+		settings.put("test", "bla");
+		settings.addNewSection("sec");
+		settings.getSection("sec").put("blubb", "bla");
 		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
 		addPage(generalOptionsPage);
 		
@@ -31,6 +33,9 @@ public class MainWizard extends Wizard {
 		return true;		
 	}
 	
-	
+	@Override
+	public IDialogSettings getDialogSettings() {
+		return super.getDialogSettings();
+	}
 	
 }

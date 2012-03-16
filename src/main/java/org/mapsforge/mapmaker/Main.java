@@ -15,6 +15,7 @@ public class Main {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
+		
 
 		// TextProgressManager tpm = new TextProgressManager();
 		// tpm.onStart();

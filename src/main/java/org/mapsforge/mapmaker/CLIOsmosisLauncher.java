@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.mapsforge.mapmaker.TaskConfigurationBuilder.TaskType;
+import org.mapsforge.mapmaker.gui.ProgressGUI;
 import org.openstreetmap.osmosis.core.OsmosisConstants;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.cli.CommandLineParser;
@@ -20,6 +22,8 @@ public class CLIOsmosisLauncher {
 	// file=/home/moep/maps/berlin.map --poi-writer /home/moep/maps/berlin.poi
 	// categoryConfigPath=/home/moep/workspace/mapmaker/POICategoriesOsmosis.xml
 	public static void main(String[] args) {
+		createAndLaunchUsingTaskConfigurationBuilder();
+//		createAndLaunchCustomConfiguration();
 //		System.out.println("Starting Osmosis " + OsmosisConstants.VERSION);
 //		CommandLineParser commandLineParser;
 //		TaskRegistrar taskRegistrar;
@@ -43,6 +47,33 @@ public class CLIOsmosisLauncher {
 		// createAndLaunchCustomConfiguration();
 		
 	}
+	
+	private static void createAndLaunchUsingTaskConfigurationBuilder() {
+		TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
+		builder.createAndAddTask(TaskType.READ_BINARY, "/home/moep/maps/berlin.osm.pbf");
+		builder.createAndAddTask(TaskType.POI_WRITER, "/home/moep/maps/berlin.poi", "categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
+		
+		TaskRegistrar taskRegistrar = new TaskRegistrar();
+		taskRegistrar.initialize(new LinkedList<String>());
+
+		Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
+		System.out.println("Preparing pipeline");
+		pipeline.prepare(builder.getTaskConfigurations());
+		System.out.println("Starting pipeline");
+		pipeline.execute();		
+		System.out.println("Waiting for pipeline to finish");
+		
+		ProgressGUI gui = ProgressGUI.getInstance();
+		System.out.println("Progress manager for launcher: " + gui);
+		new FakeOsmosis(ProgressGUI.getInstance());
+		gui.show();
+		
+		pipeline.waitForCompletion();
+		
+		System.out.println("Done");
+		
+	}
+	
 
 	private static void createAndLaunchCustomConfiguration() {
 		Map<String, String> configArgs = new HashMap<String, String>();
@@ -95,7 +126,4 @@ public class CLIOsmosisLauncher {
 		}
 	}
 	
-	private static void testTaskConfigurationBuilder() {
-		TaskConfigurationBuilder b;
-	}
 }
