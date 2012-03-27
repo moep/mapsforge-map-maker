@@ -3,6 +3,8 @@ package org.mapsforge.mapmaker.gui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.mapsforge.mapmaker.logging.ProgressManager;
@@ -28,14 +30,11 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	public static ProgressGUI getInstance() {
-		System.out.println("** GetInstance");
-		
+
 		if (ProgressGUI.instance == null) {
-			System.out.println("Creating progress gui");
 			ProgressGUI.instance = new ProgressGUI();
 			return ProgressGUI.instance;
 		} else {
-			System.out.println("Returning singleton");
 			return ProgressGUI.instance;
 		}
 	}
@@ -52,23 +51,41 @@ public class ProgressGUI implements ProgressManager {
 
 		this.progressBar = new ProgressBar(this.shell, SWT.HORIZONTAL);
 		this.progressBar.setBounds(10, 39, 431, 20);
+
+		this.display.addListener(SWT.ABORT, new Listener() {
+
+			public void handleEvent(Event event) {
+
+				System.out.println("** CLOSE **");
+
+			}
+
+		});
 	}
 
 	public void show() {
+		System.out.println("Showing GUI");
 		this.shell.open();
 		while (!this.shell.isDisposed()) {
 			if (!this.display.readAndDispatch()) {
 				this.display.sleep();
 			}
 		}
+		
+		close();
 	}
 
 	public void close() {
+		System.out.println("Closing");
 		this.shell.close();
+		this.shell.dispose();
 		this.display.dispose();
 	}
 
 	public void onMessage(final String message) {
+		if (this.shell.isDisposed())
+			return;
+
 		this.display.asyncExec(new Runnable() {
 			public void run() {
 				ProgressGUI.this.lblStatusText.setText(message);
@@ -77,33 +94,48 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	public void onTick() {
+		if (this.shell.isDisposed())
+			return;
 		this.display.asyncExec(new Runnable() {
 			public void run() {
 				if (!ProgressGUI.this.indeterminateMode) {
-						ProgressGUI.this.progressBar.setSelection(ProgressGUI.this.progressBar.getSelection() + 1);
+					ProgressGUI.this.progressBar
+							.setSelection(ProgressGUI.this.progressBar
+									.getSelection() + 1);
 				}
 			}
 		});
 	}
 
 	public void onInit(final int minVal, final int maxVal) {
+		if (this.shell.isDisposed())
+			return;
 		this.display.asyncExec(new Runnable() {
 			public void run() {
-				if (minVal == 0 && maxVal == 0 && !ProgressGUI.this.indeterminateMode) {
+				if (minVal == 0 && maxVal == 0
+						&& !ProgressGUI.this.indeterminateMode) {
 					// Change progress bar style to indeterminate mode
 					ProgressGUI.this.progressBar.dispose();
-					ProgressGUI.this.progressBar = new ProgressBar(ProgressGUI.this.shell, SWT.HORIZONTAL
-							| SWT.INDETERMINATE);
-					ProgressGUI.this.progressBar.setBounds(ProgressGUI.this.progressBarX, ProgressGUI.this.progressBarY,
-							ProgressGUI.this.progressBarWidth, ProgressGUI.this.progressBarHeight);
+					ProgressGUI.this.progressBar = new ProgressBar(
+							ProgressGUI.this.shell, SWT.HORIZONTAL
+									| SWT.INDETERMINATE);
+					ProgressGUI.this.progressBar.setBounds(
+							ProgressGUI.this.progressBarX,
+							ProgressGUI.this.progressBarY,
+							ProgressGUI.this.progressBarWidth,
+							ProgressGUI.this.progressBarHeight);
 					ProgressGUI.this.indeterminateMode = true;
 				} else {
 					ProgressGUI.this.progressBar.dispose();
-					ProgressGUI.this.progressBar = new ProgressBar(ProgressGUI.this.shell, SWT.HORIZONTAL);
+					ProgressGUI.this.progressBar = new ProgressBar(
+							ProgressGUI.this.shell, SWT.HORIZONTAL);
 					ProgressGUI.this.progressBar.setMinimum(minVal);
 					ProgressGUI.this.progressBar.setMaximum(maxVal);
-					ProgressGUI.this.progressBar.setBounds(ProgressGUI.this.progressBarX, ProgressGUI.this.progressBarY,
-							ProgressGUI.this.progressBarWidth, ProgressGUI.this.progressBarHeight);
+					ProgressGUI.this.progressBar.setBounds(
+							ProgressGUI.this.progressBarX,
+							ProgressGUI.this.progressBarY,
+							ProgressGUI.this.progressBarWidth,
+							ProgressGUI.this.progressBarHeight);
 					ProgressGUI.this.indeterminateMode = false;
 				}
 			}
@@ -111,6 +143,8 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	public void onUpdate(final int newVal) {
+		if (this.shell.isDisposed())
+			return;
 		this.display.asyncExec(new Runnable() {
 			public void run() {
 				progressBar.setSelection(newVal);
@@ -119,14 +153,20 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	public void onStart() {
+		if (this.shell.isDisposed())
+			return;
 		// TODO Auto-generated method stub
 	}
 
 	public void onFinish() {
+		if (this.shell.isDisposed())
+			return;
 		this.display.asyncExec(new Runnable() {
 			public void run() {
 				lblStatusText.setText("Done.");
-				progressBar.setEnabled(false);
+				// progressBar.setEnabled(false);
+				onInit(0, 1);
+				onUpdate(1);
 			}
 		});
 

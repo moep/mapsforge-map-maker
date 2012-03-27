@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.mapsforge.mapmaker.TaskConfigurationBuilder.TaskType;
 import org.mapsforge.mapmaker.gui.ProgressGUI;
-import org.openstreetmap.osmosis.core.OsmosisConstants;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.cli.CommandLineParser;
 import org.openstreetmap.osmosis.core.pipeline.common.Pipeline;
@@ -23,57 +22,94 @@ public class CLIOsmosisLauncher {
 	// categoryConfigPath=/home/moep/workspace/mapmaker/POICategoriesOsmosis.xml
 	public static void main(String[] args) {
 		createAndLaunchUsingTaskConfigurationBuilder();
-//		createAndLaunchCustomConfiguration();
-//		System.out.println("Starting Osmosis " + OsmosisConstants.VERSION);
-//		CommandLineParser commandLineParser;
-//		TaskRegistrar taskRegistrar;
-//		Pipeline pipeline;
-//
-//		commandLineParser = new CommandLineParser();
-//		commandLineParser.parse(args);
-//
-//		List<TaskConfiguration> tasks = commandLineParser.getTaskInfoList();
-//		System.out.println("Task configurations: ");
-//
-//		taskRegistrar = new TaskRegistrar();
-//		taskRegistrar.initialize(commandLineParser.getPlugins());
-//
-//		pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
-//		pipeline.prepare(tasks);
-//		pipeline.execute();
-//		pipeline.waitForCompletion();
-
-//		 analyzeTasks(args);
 		// createAndLaunchCustomConfiguration();
-		
+		// System.out.println("Starting Osmosis " + OsmosisConstants.VERSION);
+		// CommandLineParser commandLineParser;
+		// TaskRegistrar taskRegistrar;
+		// Pipeline pipeline;
+		//
+		// commandLineParser = new CommandLineParser();
+		// commandLineParser.parse(args);
+		//
+		// List<TaskConfiguration> tasks = commandLineParser.getTaskInfoList();
+		// System.out.println("Task configurations: ");
+		//
+		// taskRegistrar = new TaskRegistrar();
+		// taskRegistrar.initialize(commandLineParser.getPlugins());
+		//
+		// pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
+		// pipeline.prepare(tasks);
+		// pipeline.execute();
+		// pipeline.waitForCompletion();
+
+		// analyzeTasks(args);
+		// createAndLaunchCustomConfiguration();
+
 	}
-	
+
 	private static void createAndLaunchUsingTaskConfigurationBuilder() {
-		TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
-		builder.createAndAddTask(TaskType.READ_BINARY, "/home/moep/maps/berlin.osm.pbf");
-		builder.createAndAddTask(TaskType.POI_WRITER, "/home/moep/maps/berlin.poi", "categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
-		
-		TaskRegistrar taskRegistrar = new TaskRegistrar();
+		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
+		builder.createAndAddTask(TaskType.READ_BINARY,
+				"/home/moep/maps/berlin.osm.pbf");
+		builder.createAndAddTask(TaskType.POI_WRITER,
+				"/home/moep/maps/berlin.poi",
+				"categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
+
+		final TaskRegistrar taskRegistrar = new TaskRegistrar();
 		taskRegistrar.initialize(new LinkedList<String>());
 
-		Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
-		System.out.println("Preparing pipeline");
-		pipeline.prepare(builder.getTaskConfigurations());
-		System.out.println("Starting pipeline");
-		pipeline.execute();		
-		System.out.println("Waiting for pipeline to finish");
+		final ProgressGUI gui = ProgressGUI.getInstance();
 		
-		ProgressGUI gui = ProgressGUI.getInstance();
-		System.out.println("Progress manager for launcher: " + gui);
-		new FakeOsmosis(ProgressGUI.getInstance());
+		
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				System.out.println("Started worker thread");
+				for(int i = 0; i < 100; i++) {
+					try {
+						System.out.println("i: " + i);
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+				
+			}
+			
+		});
+		t.start();
+		
 		gui.show();
 		
-		pipeline.waitForCompletion();
-		
-		System.out.println("Done");
-		
+//		System.out.println("Osmosis thread has been started...");
+//		Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
+//		System.out.println("Preparing pipeline");
+//		gui.onMessage("Preparing pipeline");
+//		pipeline.prepare(builder.getTaskConfigurations());
+//		System.out.println("Executing pipeline");
+//		pipeline.execute();
+//		System.out.println("Waiting for completion");
+//		pipeline.waitForCompletion();
+//		System.out.println("Done");
+//		gui.onFinish();
+
+		// try {
+		// t.join();
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// System.out.println("Exitting");
+		// System.exit(0);
+
+		try {
+			t.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		System.out.println("The End.");
+
 	}
-	
 
 	private static void createAndLaunchCustomConfiguration() {
 		Map<String, String> configArgs = new HashMap<String, String>();
@@ -125,5 +161,5 @@ public class CLIOsmosisLauncher {
 			System.out.println("  [*] " + l);
 		}
 	}
-	
+
 }
