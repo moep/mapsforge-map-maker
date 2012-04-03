@@ -1,6 +1,5 @@
 package org.mapsforge.mapmaker;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.LinkedList;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -42,7 +41,7 @@ public class GUIOsmosisLauncher {
 			System.out.println("Launching Osmosis");
 			ProgressGUI progressHandler = ProgressGUI.getInstance();
 			invokeOsmosis(w.getDialogSettings());
-			progressHandler.show();
+			progressHandler.show(display);
 
 		case Window.CANCEL:
 			//System.out.println("Saving configuration");
@@ -93,7 +92,7 @@ public class GUIOsmosisLauncher {
 		pipeline.execute();
 		
 		ProgressGUI gui = ProgressGUI.getInstance();		
-		gui.show();
+		gui.show(new Display());
 		
 		System.out.println("Waiting for pipeline to finish");
 		pipeline.waitForCompletion();

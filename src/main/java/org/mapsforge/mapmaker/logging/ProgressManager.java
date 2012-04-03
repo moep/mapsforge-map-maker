@@ -1,10 +1,10 @@
 package org.mapsforge.mapmaker.logging;
 
 public interface ProgressManager {
-	public void onMessage(String message);
-	public void onTick();
-	public void onInit(int minVal, int maxVal);
-	public void onUpdate(int newVal);
-	public void onStart();
-	public void onFinish();
+	public void sendMessage(String message);
+	public void tick();
+	public void initProgressBar(int minVal, int maxVal);
+	public void updateProgressBar(int newVal);
+	public void start();
+	public void finish();
 }

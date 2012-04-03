@@ -22,33 +22,33 @@ package org.mapsforge.mapmaker.logging;
 public class DummyProgressManager implements ProgressManager {
 
 	@Override
-	public void onMessage(String message) {
+	public void sendMessage(String message) {
 		// empty by purpose
 
 	}
 
 	@Override
-	public void onTick() {
+	public void tick() {
 		// empty by purpose
 	}
 
 	@Override
-	public void onInit(int minVal, int maxVal) {
+	public void initProgressBar(int minVal, int maxVal) {
 		// empty by purpose
 	}
 
 	@Override
-	public void onUpdate(int newVal) {
+	public void updateProgressBar(int newVal) {
 		// empty by purpose
 	}
 
 	@Override
-	public void onStart() {
+	public void start() {
 		// empty by purpose
 	}
 
 	@Override
-	public void onFinish() {
+	public void finish() {
 		// empty by purpose
 	}
 

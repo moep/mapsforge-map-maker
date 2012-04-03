@@ -5,8 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.swt.widgets.Display;
 import org.mapsforge.mapmaker.TaskConfigurationBuilder.TaskType;
 import org.mapsforge.mapmaker.gui.ProgressGUI;
+import org.mapsforge.mapmaker.logging.ProgressManager;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.cli.CommandLineParser;
 import org.openstreetmap.osmosis.core.pipeline.common.Pipeline;
@@ -59,55 +61,39 @@ public class CLIOsmosisLauncher {
 		taskRegistrar.initialize(new LinkedList<String>());
 
 		final ProgressGUI gui = ProgressGUI.getInstance();
+		final Display display = new Display();
 		
-		
+		// Start Osmosis
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				System.out.println("Started worker thread");
-				for(int i = 0; i < 100; i++) {
-					try {
-						System.out.println("i: " + i);
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
-				}
+				ProgressManager pm = ProgressGUI.getInstance();
 				
+				
+				pm.start();
+				System.out.println("Starting pipeline");				
+				Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
+				System.out.println("Preparing pipeline");
+				pipeline.prepare(builder.getTaskConfigurations());
+				System.out.println("Executing pipeline");
+				pipeline.execute();
+				System.out.println("Waiting for completion");
+				pipeline.waitForCompletion();
+				gui.finish();
 			}
 			
 		});
 		t.start();
 		
-		gui.show();
-		
-//		System.out.println("Osmosis thread has been started...");
-//		Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
-//		System.out.println("Preparing pipeline");
-//		gui.onMessage("Preparing pipeline");
-//		pipeline.prepare(builder.getTaskConfigurations());
-//		System.out.println("Executing pipeline");
-//		pipeline.execute();
-//		System.out.println("Waiting for completion");
-//		pipeline.waitForCompletion();
-//		System.out.println("Done");
-//		gui.onFinish();
-
-		// try {
-		// t.join();
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// System.out.println("Exitting");
-		// System.exit(0);
-
+		gui.show(display);
 		try {
-			t.join();
+			t.join();			
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-		System.out.println("The End.");
+		
+		System.out.println("Nothing to do here");
 
 	}
 

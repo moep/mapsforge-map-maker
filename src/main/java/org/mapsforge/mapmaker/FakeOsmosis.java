@@ -11,16 +11,16 @@ public class FakeOsmosis extends Thread {
 
 	public void run() {
 		
-		this.pm.onStart();
+		this.pm.start();
 		System.out.println("Fake osmosis has been started");
 		
-		this.pm.onInit(0, 0);
-		this.pm.onMessage("Doing some preparations");
+		this.pm.initProgressBar(0, 0);
+		this.pm.sendMessage("Doing some preparations");
 		System.out.println("Preparation phase");
 		try {
 			for (int i = 0; i <= 20; i++) {
 				Thread.sleep(100);
-				this.pm.onTick();
+				this.pm.tick();
 			}
 		} catch (InterruptedException e) {
 			System.out.println("Interrupted");
@@ -28,20 +28,20 @@ public class FakeOsmosis extends Thread {
 		}
 		
 		
-		this.pm.onInit(0, 150);
-		this.pm.onMessage("Adding 150 items");
+		this.pm.initProgressBar(0, 150);
+		this.pm.sendMessage("Adding 150 items");
 		System.out.println("Counting phase");
 		try {
 			for (int i = 0; i <= 150; i++) {
 				Thread.sleep(50);
-				this.pm.onTick();
+				this.pm.tick();
 			}
 		} catch (InterruptedException e) {
 			System.out.println("Interrupted");
 			Thread.currentThread().interrupt();
 		}
 		
-		this.pm.onFinish();
+		this.pm.finish();
 		System.out.println("Fake osmosis has been finished");
 	}
 }
