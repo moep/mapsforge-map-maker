@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class POIWizardPage extends WizardPage {
-	private String categoryConfigPath;
+	private String categoryConfigPath = "POICategoriesOsmosis.xml";
 	private IDialogSettings settings;
 	
 	private Text tfCategoryConfigPath;
@@ -49,7 +49,7 @@ public class POIWizardPage extends WizardPage {
 		lblSelectFile.setText("Category Mapping Configuration File:");
 		
 		tfCategoryConfigPath = new Text(container, SWT.BORDER);
-		tfCategoryConfigPath.setText("POICategoriesOsmosis.xml");
+		tfCategoryConfigPath.setText(this.categoryConfigPath);
 		FormData fd_text = new FormData();
 		fd_text.top = new FormAttachment(lblSelectFile, 6);
 		fd_text.left = new FormAttachment(lblSelectFile, 0, SWT.LEFT);
@@ -79,6 +79,9 @@ public class POIWizardPage extends WizardPage {
 		fd_btnOpenFile.right = new FormAttachment(100, -10);
 		btnOpenFile.setLayoutData(fd_btnOpenFile);
 		btnOpenFile.setText("...");
+		
+		// Validate default values
+		onInputChanged();
 	}
 	
 	protected void setCategoryConfigPath(String path) {

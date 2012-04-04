@@ -33,7 +33,6 @@ public class ProgressGUI implements ProgressManager {
 	private Button btnCancel;
 
 	private ProgressGUI() {
-		System.out.println("GUI constructor");
 	}
 
 	public synchronized static ProgressGUI getInstance() {
@@ -82,7 +81,7 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	private void shutdown() {
-		System.out.println("GUI: shutdown");
+		System.out.println("[GUI] shutdown");
 
 		if (!this.isFinished) {
 			System.out.println("force exit");
@@ -133,8 +132,6 @@ public class ProgressGUI implements ProgressManager {
 		progressBarLayout.bottom = new FormAttachment(ProgressGUI.this.btnOK,
 				-PADDING);
 		ProgressGUI.this.progressBar.setLayoutData(progressBarLayout);
-		System.out.println("Shell size before initProgressBar(): "
-				+ this.shell.getSize());
 
 		// RESIZE ACTIONS
 		// this.shell.addListener(SWT.RESIZE, new Listener() {
@@ -152,16 +149,15 @@ public class ProgressGUI implements ProgressManager {
 			public void widgetSelected(SelectionEvent event) {
 				ProgressGUI.this.shell.close();
 				ProgressGUI.this.shell.dispose();
-				System.out.println("OK");
 			}
 		});
 
 		// REMOVE LOCKS
-		System.out.println("GUI: removing locks");
+		System.out.println("[GUI] removing locks");
 		synchronized (instance) {
 			this.isInitialized = true;
 			instance.notify();
-			System.out.println("GUI: ready");
+			System.out.println("[GUI] ready");
 		}
 
 	}
@@ -212,11 +208,11 @@ public class ProgressGUI implements ProgressManager {
 							&& ProgressGUI.this.progressBar.getMaximum() == 0;
 
 					if (minVal == 0 && maxVal == 0) {
-						System.out.println("creating indeterminate bar");
+						System.out.println("[GUI] creating indeterminate bar");
 						createOrReplaceProgressBar(SWT.HORIZONTAL
 								| SWT.INDETERMINATE);
 					} else {
-						System.out.println("creating determinate bar");
+						System.out.println("[GUI] creating determinate bar");
 						createOrReplaceProgressBar(SWT.HORIZONTAL);
 						ProgressGUI.this.progressBar.setMinimum(minVal);
 						ProgressGUI.this.progressBar.setMaximum(maxVal);
@@ -232,26 +228,6 @@ public class ProgressGUI implements ProgressManager {
 		if (ProgressGUI.this.progressBar != null) {
 			ProgressGUI.this.progressBar.dispose();
 		}
-
-		// ProgressGUI.this.progressBar = new
-		// ProgressBar(ProgressGUI.this.shell,
-		// mode);
-		// ProgressGUI.this.progressBar.setSize(500, 10);
-		// final FormData progressBarLayout = new FormData(
-		// ProgressGUI.this.shell.getSize().x - 2
-		// * ProgressGUI.this.PADDING, SWT.DEFAULT);
-		// progressBarLayout.top = new FormAttachment(
-		// ProgressGUI.this.lblStatusText, ProgressGUI.this.PADDING);
-		// progressBarLayout.left = new FormAttachment(0,
-		// ProgressGUI.this.PADDING);
-		// progressBarLayout.right = new FormAttachment(100,
-		// -ProgressGUI.this.PADDING);
-		// progressBarLayout.bottom = new FormAttachment(100,
-		// -ProgressGUI.this.PADDING);
-		// ProgressGUI.this.progressBar.setLayoutData(progressBarLayout);
-
-		System.out
-				.println("Shell size in create...(): " + this.shell.getSize());
 
 		ProgressGUI.this.progressBar = new ProgressBar(this.shell, mode);
 		FormData progressBarLayout = new FormData(
@@ -289,7 +265,7 @@ public class ProgressGUI implements ProgressManager {
 		// Block until the GUI has been fully initialized
 		synchronized (instance) {
 			while (!this.isInitialized) {
-				System.out.println("GUI: Waiting for initialization to finish");
+				System.out.println("[GUI] Waiting for initialization to finish");
 				try {
 					instance.wait();
 				} catch (InterruptedException e) {
@@ -314,7 +290,7 @@ public class ProgressGUI implements ProgressManager {
 
 	@Override
 	public void finish() {
-		System.out.println("GUI: finish");
+		System.out.println("[GUI] finish");
 		this.display.asyncExec(new Runnable() {
 
 			@Override

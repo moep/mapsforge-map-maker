@@ -80,7 +80,7 @@ public class CLIOsmosisLauncher {
 				pipeline.execute();
 				System.out.println("Waiting for completion");
 				pipeline.waitForCompletion();
-				gui.finish();
+				pm.finish();
 			}
 			
 		});

@@ -1,7 +1,6 @@
 package org.mapsforge.mapmaker.gui;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -42,7 +41,9 @@ public class OptionSelectionWizardPage extends WizardPage {
 		setTitle(pageName);
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
 		this.settings = settings;
-		this.settings.addNewSection("general");
+		if(this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
+			this.settings.addNewSection(SETTINGS_SECTION_NAME);
+		}
 	}
 
 	@Override
@@ -55,7 +56,28 @@ public class OptionSelectionWizardPage extends WizardPage {
 		createOpenInputFileButton(container);
 		createLink(container);
 		createCheckBoxes(container);
-
+		setValuesFromSettings();
+	}
+	
+	
+	/**
+	 * Reads last used values from settings object and sets form elements' values accordingly.
+	 */
+	private void setValuesFromSettings() {
+		System.out.println("[WizardPage] Applying setting values");
+		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
+		
+		// Text field
+		if(section.get("inputFilePath") != null) {
+			this.inputFilePath = section.get("inputFilePath");
+			this.tfInputFilePath.setText(section.get("inputFilePath"));
+		}
+		
+		// Checkboxes
+		this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
+		
+		// Validate inputs
+		onInputChanged();
 	}
 
 	private void createCheckBoxes(Composite container) {
@@ -177,7 +199,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 		section.put("createVectorMap", this.ckboxCreateVectorMap.getSelection());
 		section.put("createPOIs", this.ckboxCreatePOIs.getSelection());
 		
-		System.out.println("Settings have been updated ");
+		System.out.println("[WizardPage] Settings have been updated.");
 	}
 
 	@Override
