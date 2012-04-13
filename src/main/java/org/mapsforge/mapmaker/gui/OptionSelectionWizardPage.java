@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Text;
 public class OptionSelectionWizardPage extends WizardPage {
 	private String inputFilePath;
 	private IDialogSettings settings; 
-	final static String SETTINGS_SECTION_NAME = "general";
+	private final static String SETTINGS_SECTION_NAME = "general";
 	
 	protected Text tfInputFilePath;
 	private FormData fd_text;

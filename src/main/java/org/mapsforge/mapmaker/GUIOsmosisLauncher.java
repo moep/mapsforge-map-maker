@@ -17,6 +17,9 @@ import org.mapsforge.mapmaker.logging.ProgressManager;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.pipeline.common.Pipeline;
 
+
+
+
 public class GUIOsmosisLauncher {
 	// TODO Where are these constants defined in SWT
 
