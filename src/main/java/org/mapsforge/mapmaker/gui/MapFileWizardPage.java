@@ -7,7 +7,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -23,11 +22,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 public class MapFileWizardPage extends WizardPage {
 	private IDialogSettings settings;
 	private final static String SETTINGS_SECTION_NAME = "mapfile";
+	private Table inpZoomIntervalConfiguration;
 
 	protected MapFileWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
@@ -47,7 +49,6 @@ public class MapFileWizardPage extends WizardPage {
 		// Child composite for hiding controls
 		final Composite container = new Composite(scrolledComposite, SWT.NONE);
 		container.setLayout(new FormLayout());
-		// container.setBackground(new Color(Display.getCurrent(), 255, 0, 0));
 
 		// LABEL
 		Label lblMapFilePath = new Label(container, SWT.NONE);
@@ -197,20 +198,8 @@ public class MapFileWizardPage extends WizardPage {
 		//
 		// ADVANCED SETTINGS
 		//
-		// Label lblAdvancedSettingsSeparator = new Label(container,
-		// SWT.SEPARATOR
-		// | SWT.HORIZONTAL);
-		// FormData fd_lblAdvancedSettingsSeparator = new FormData();
-		// fd_lblAdvancedSettingsSeparator.left = new FormAttachment(0);
-		// fd_lblAdvancedSettingsSeparator.top = new FormAttachment(lblComment,
-		// 6);
-		// fd_lblAdvancedSettingsSeparator.right = new FormAttachment(100);
-		// lblAdvancedSettingsSeparator
-		// .setLayoutData(fd_lblAdvancedSettingsSeparator);
-		// lblAdvancedSettingsSeparator.setText("Advanced Settings");
 
 		final ExpandBar bar = new ExpandBar(container, SWT.NONE);
-		bar.setBackground(new Color(Display.getCurrent(), 255, 0, 0));
 		// TODO remove hard-coded dimensions
 		FormData tmp = new FormData(SWT.DEFAULT, 500);
 		tmp.left = new FormAttachment(0);
@@ -218,12 +207,9 @@ public class MapFileWizardPage extends WizardPage {
 		tmp.top = new FormAttachment(lblComment, 6);
 		// tmp.bottom = new FormAttachment(100);
 		bar.setLayoutData(tmp);
-		bar.setBackground(new Color(Display.getCurrent(), 255, 0, 0));
 
 		final Composite advancedOptions = new Composite(bar, SWT.NONE);
 		advancedOptions.setLayout(new FormLayout());
-		advancedOptions
-				.setBackground(new Color(Display.getCurrent(), 0, 255, 0));
 		ExpandItem expandItem = new ExpandItem(bar, SWT.NONE, 0);
 		expandItem
 				.setText("Advanced Options (only use when you know what you are doing)");
@@ -231,7 +217,6 @@ public class MapFileWizardPage extends WizardPage {
 		expandItem.setExpanded(true);
 
 		// TAG CONFIGURATION FILE
-
 		Button chkUseCustomTagConfigFile = new Button(advancedOptions,
 				SWT.CHECK);
 		FormData td_chkUseCustomTagConfigFile = new FormData();
@@ -349,74 +334,43 @@ public class MapFileWizardPage extends WizardPage {
 
 		Button btnAddZoomInterval = new Button(advancedOptions, SWT.PUSH);
 		FormData fd_btnAddZoomInterval = new FormData();
-		fd_btnAddZoomInterval.top = new FormAttachment(
-				lblZoomIntervalConfig, 6);
+		fd_btnAddZoomInterval.top = new FormAttachment(lblZoomIntervalConfig, 6);
 		btnAddZoomInterval.setLayoutData(fd_btnAddZoomInterval);
-		btnAddZoomInterval.setImage(new Image(Display.getCurrent(), "list-add.png"));
+		btnAddZoomInterval.setImage(new Image(Display.getCurrent(),
+				"list-add.png"));
 		btnAddZoomInterval.setToolTipText("Add a zoom interval");
-		
+
 		Button btnRemoveZoomInterval = new Button(advancedOptions, SWT.PUSH);
 		FormData fd_btnRemoveZoomInterval = new FormData();
-		fd_btnRemoveZoomInterval.bottom = new FormAttachment(btnAddZoomInterval, 0, SWT.BOTTOM);
-		fd_btnRemoveZoomInterval.left = new FormAttachment(btnAddZoomInterval, 6);
+		fd_btnRemoveZoomInterval.bottom = new FormAttachment(
+				btnAddZoomInterval, 0, SWT.BOTTOM);
+		fd_btnRemoveZoomInterval.left = new FormAttachment(btnAddZoomInterval,
+				6);
 		btnRemoveZoomInterval.setLayoutData(fd_btnRemoveZoomInterval);
-		btnRemoveZoomInterval.setImage(new Image(Display.getCurrent(), "list-remove.png"));
-		
-		Table inpZoomIntervalConfiguration = new Table(advancedOptions, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
-		FormData fd_inpZoomIntervalConfiguration = new FormData(SWT.DEFAULT, 200);
-		fd_inpZoomIntervalConfiguration.top = new FormAttachment(btnAddZoomInterval, 3);
+		btnRemoveZoomInterval.setImage(new Image(Display.getCurrent(),
+				"list-remove.png"));
+
+		inpZoomIntervalConfiguration = new Table(advancedOptions, SWT.MULTI
+				| SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
+		FormData fd_inpZoomIntervalConfiguration = new FormData(SWT.DEFAULT, 80);
+		fd_inpZoomIntervalConfiguration.top = new FormAttachment(
+				btnAddZoomInterval, 3);
 		fd_inpZoomIntervalConfiguration.left = new FormAttachment(0);
 		fd_inpZoomIntervalConfiguration.right = new FormAttachment(100);
-		inpZoomIntervalConfiguration.setLayoutData(fd_inpZoomIntervalConfiguration);
-		inpZoomIntervalConfiguration.setLinesVisible(true);
-		inpZoomIntervalConfiguration.setHeaderVisible(true);
+		inpZoomIntervalConfiguration
+				.setLayoutData(fd_inpZoomIntervalConfiguration);
+		initializeZoomIntervalTable();
+
+		// RESTORE DEFAULT SETTINGS
+		Button btnDefaultSettings = new Button(container, SWT.PUSH);
+		FormData fd_btnDefaultSettings = new FormData();
+		fd_btnDefaultSettings.bottom = new FormAttachment(100);
+		btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
+		btnDefaultSettings.setText("Restore default settings");
 
 		// Set correct height
 		expandItem.setHeight(advancedOptions.computeSize(SWT.DEFAULT,
 				SWT.DEFAULT).y);
-
-		// bar.addExpandListener(new ExpandListener() {
-		//
-		// @Override
-		// public void itemExpanded(ExpandEvent arg0) {
-		// container.layout();
-		// container.layout(true);
-		// container.pack(true);
-		// container.pack();
-		// parent.getShell().layout();
-		// bar.layout();
-		// bar.pack();
-		// bar.pack(true);
-		// advancedOptions.layout();
-		// advancedOptions.layout(true);
-		// advancedOptions.pack();
-		// System.out.println("Container size: "
-		// + container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		// scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT,
-		// SWT.DEFAULT));
-		//
-		// // TODO swap values
-		// }
-		//
-		// @Override
-		// public void itemCollapsed(ExpandEvent arg0) {
-		// container.layout();
-		// container.layout(true);
-		// container.pack(true);
-		// container.pack();
-		// parent.getShell().layout();
-		// bar.layout();
-		// bar.pack();
-		// bar.pack(true);
-		// advancedOptions.layout();
-		// advancedOptions.layout(true);
-		// advancedOptions.pack();
-		// System.out.println("Container size: "
-		// + container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		// scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT,
-		// SWT.DEFAULT));
-		// }
-		// });
 
 		// SCROLLBARS
 		// Allow container's content to be scrolled by defining container as
@@ -435,6 +389,40 @@ public class MapFileWizardPage extends WizardPage {
 
 		// EVENT LISTENERS
 
+		setValuesFromSettings();
+
+	}
+
+	/**
+	 * Reads last used values from settings object and sets form elements'
+	 * values accordingly.
+	 */
+	private void setValuesFromSettings() {
+		System.out.println("[WizardPage] Applying setting values");
+		IDialogSettings section = this.settings
+				.getSection(SETTINGS_SECTION_NAME);
+
+		// Text field
+		// if(section.get("inputFilePath") != null) {
+		// this.inputFilePath = section.get("inputFilePath");
+		// this.tfInputFilePath.setText(section.get("inputFilePath"));
+		// }
+
+		// Checkboxes
+		// this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
+
+		// Zoom interval configuration
+		this.inpZoomIntervalConfiguration.setRedraw(false);
+		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+				.setText(new String[] { "5", "0", "7" });
+		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+				.setText(new String[] { "10", "8", "11" });
+		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+				.setText(new String[] { "14", "12", "21" });
+		this.inpZoomIntervalConfiguration.setRedraw(true);
+
+		// Validate inputs
+		onInputChanged();
 	}
 
 	private void populateLanguageDropDownMenu(Combo inpPreferredLang) {
@@ -445,6 +433,25 @@ public class MapFileWizardPage extends WizardPage {
 			inpPreferredLang.add(code);
 		}
 
+	}
+
+	private void initializeZoomIntervalTable() {
+		this.inpZoomIntervalConfiguration.setLinesVisible(true);
+		this.inpZoomIntervalConfiguration.setHeaderVisible(true);
+
+		TableColumn cols[] = new TableColumn[3];
+		for (int i = 0; i < cols.length; i++) {
+			cols[i] = new TableColumn(this.inpZoomIntervalConfiguration,
+					SWT.NONE);
+		}
+
+		cols[0].setText("Base zoom level");
+		cols[1].setText("Minimal zoom level");
+		cols[2].setText("Maximal zoom level");
+
+		for (int i = 0; i < cols.length; i++) {
+			cols[i].pack();
+		}
 	}
 
 	void onInputChanged() {

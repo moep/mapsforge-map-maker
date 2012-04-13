@@ -20,11 +20,11 @@ public class MainWizard extends Wizard {
 		}
 		
 		setDialogSettings(settings);
-//		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
-//		addPage(generalOptionsPage);
-//		
-//		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
-//		addPage(poiOptionsPage);
+		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
+		addPage(generalOptionsPage);
+		
+		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
+		addPage(poiOptionsPage);
 		
 		IWizardPage mapFileOptionsPage = new MapFileWizardPage("Mapfile Settings", settings);
 		addPage(mapFileOptionsPage);
