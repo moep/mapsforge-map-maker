@@ -19,12 +19,12 @@ public class MainWizard extends Wizard {
 			System.out.println("[Wizard] Last used settings could not be used.");
 		}
 		
-		setDialogSettings(settings);
-		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
-		addPage(generalOptionsPage);
-		
-		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
-		addPage(poiOptionsPage);
+//		setDialogSettings(settings);
+//		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
+//		addPage(generalOptionsPage);
+//		
+//		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
+//		addPage(poiOptionsPage);
 		
 		IWizardPage mapFileOptionsPage = new MapFileWizardPage("Mapfile Settings", settings);
 		addPage(mapFileOptionsPage);

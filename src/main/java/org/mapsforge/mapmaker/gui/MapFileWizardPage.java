@@ -7,6 +7,10 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -17,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -30,6 +35,26 @@ public class MapFileWizardPage extends WizardPage {
 	private IDialogSettings settings;
 	private final static String SETTINGS_SECTION_NAME = "mapfile";
 	private Table inpZoomIntervalConfiguration;
+	private SelectionListener checkBoxSelectionListener;
+	// Inputs
+	private Text tfOutputFilePath;
+	private Button btnBrowseMapFile;
+	private Button chkEnableHDDCache;
+	private Button chkEnableCustomStartPosition;
+	private Button chkEnableCustomMapStartZoom;
+	private Button enableUseCustomTagConfig;
+	private Button chkEnablePolygonClipping;
+	private Button chkEnableWayClipping;
+	private Button chkComputeLabelPositions;
+	private Button chkEnableDebugFile;
+	private Text tfMapStartLat;
+	private Text tfMapStartLon;
+	private Spinner inpMapStartZoom;
+	private Text tfPreferredLanguage;
+	private Text tfComment;
+	private Text tfTagConfigurationFilePath;
+	private Spinner inpSimplificationFactor;
+	private Spinner inpBBEnlargement;
 
 	protected MapFileWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
@@ -38,6 +63,22 @@ public class MapFileWizardPage extends WizardPage {
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
 		this.settings = settings;
 		this.settings.addNewSection(SETTINGS_SECTION_NAME);
+
+		// Event listener for all checkboxes
+		this.checkBoxSelectionListener = new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				System.out.println("Checkbox changed: " + e.getSource());
+				MapFileWizardPage.this.onInputChanged();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+
+			}
+		};
 	}
 
 	@Override
@@ -58,15 +99,13 @@ public class MapFileWizardPage extends WizardPage {
 		lblMapFilePath.setLayoutData(fd_lblMapFilePath);
 		lblMapFilePath.setText("Save as...");
 
-		// OUTPUT FILE TEXT FIELD
-		Text tfOutputFilePath = new Text(container, SWT.BORDER);
+		tfOutputFilePath = new Text(container, SWT.BORDER);
 		FormData fd_tfOutputFilePath = new FormData();
 		fd_tfOutputFilePath.top = new FormAttachment(lblMapFilePath, 6);
 		fd_tfOutputFilePath.left = new FormAttachment(0, 0);
 		tfOutputFilePath.setLayoutData(fd_tfOutputFilePath);
 
-		// BROWSE FILES BUTTON
-		Button btnBrowseMapFile = new Button(container, SWT.NONE);
+		btnBrowseMapFile = new Button(container, SWT.NONE);
 		fd_tfOutputFilePath.right = new FormAttachment(btnBrowseMapFile, -6);
 		FormData fd_btnNewButton = new FormData();
 		fd_btnNewButton.top = new FormAttachment(tfOutputFilePath, 0,
@@ -75,16 +114,14 @@ public class MapFileWizardPage extends WizardPage {
 		btnBrowseMapFile.setLayoutData(fd_btnNewButton);
 		btnBrowseMapFile.setText("...");
 
-		// HDD MODE CHECKBOX
-		Button chkEnableHDDCache = new Button(container, SWT.CHECK);
+		chkEnableHDDCache = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableHDDCache = new FormData();
 		fd_chkEnableHDDCache.top = new FormAttachment(tfOutputFilePath, 6);
 		chkEnableHDDCache.setLayoutData(fd_chkEnableHDDCache);
 		chkEnableHDDCache
 				.setText("Cache tiles to HDD (slower but required for bigger map files)");
 
-		// CUSTOM START POSITION CHECKBOX
-		Button chkEnableCustomStartPosition = new Button(container, SWT.CHECK);
+		chkEnableCustomStartPosition = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableCustomStartPosition = new FormData();
 		fd_chkEnableCustomStartPosition.top = new FormAttachment(
 				chkEnableHDDCache, 6);
@@ -109,7 +146,7 @@ public class MapFileWizardPage extends WizardPage {
 		lblMapStartLat.setLayoutData(fd_lblMapStartLat);
 		lblMapStartLat.setText("Latitude: ");
 
-		Text tfMapStartLat = new Text(grpMapStartPositions, SWT.NONE);
+		tfMapStartLat = new Text(grpMapStartPositions, SWT.NONE);
 		FormData fd_tfMapStartLat = new FormData();
 		fd_tfMapStartLat.bottom = new FormAttachment(lblMapStartLat, 0,
 				SWT.BOTTOM);
@@ -123,15 +160,15 @@ public class MapFileWizardPage extends WizardPage {
 		lblMapStartLon.setLayoutData(fd_lblMapStartLon);
 		lblMapStartLon.setText("Longitude: ");
 
-		Text tfMapStartLon = new Text(grpMapStartPositions, SWT.NONE);
+		tfMapStartLon = new Text(grpMapStartPositions, SWT.NONE);
 		fd_tfMapStartLat.left = new FormAttachment(tfMapStartLon, 0, SWT.LEFT);
 		FormData fd_tfMapStartLon = new FormData();
 		fd_tfMapStartLon.top = new FormAttachment(tfMapStartLat, 6);
 		fd_tfMapStartLon.left = new FormAttachment(lblMapStartLon, 6);
 		tfMapStartLon.setLayoutData(fd_tfMapStartLon);
-
-		// MAP START ZOOM LEVEL
-		Button chkEnableCustomMapStartZoom = new Button(container, SWT.CHECK);
+		
+		// CUSTOM ZOOM
+		chkEnableCustomMapStartZoom = new Button(container, SWT.CHECK);
 		FormData fd_EnableCustomMapStartZoom = new FormData();
 		fd_EnableCustomMapStartZoom.top = new FormAttachment(
 				grpMapStartPositions, 8);
@@ -139,7 +176,7 @@ public class MapFileWizardPage extends WizardPage {
 		chkEnableCustomMapStartZoom
 				.setText("Use custom map start zoom level: ");
 
-		Spinner inpMapStartZoom = new Spinner(container, SWT.BORDER);
+		inpMapStartZoom = new Spinner(container, SWT.BORDER);
 		FormData fd_inpMapStartZoom = new FormData();
 		fd_inpMapStartZoom.left = new FormAttachment(
 				chkEnableCustomMapStartZoom, 6);
@@ -157,25 +194,24 @@ public class MapFileWizardPage extends WizardPage {
 		fd_lblPreferredLang.top = new FormAttachment(
 				chkEnableCustomMapStartZoom, 6);
 		lblPreferredLang.setLayoutData(fd_lblPreferredLang);
-		onInputChanged();
 		lblPreferredLang.setText("Preferred language:");
 
-		Text tfPreferredLang = new Text(container, SWT.NONE);
+		tfPreferredLanguage = new Text(container, SWT.NONE);
 		FormData fd_tfPreferredLang = new FormData();
 		fd_tfPreferredLang.left = new FormAttachment(lblPreferredLang, 6);
 		fd_tfPreferredLang.bottom = new FormAttachment(lblPreferredLang, 0,
 				SWT.BOTTOM);
-		tfPreferredLang.setLayoutData(fd_tfPreferredLang);
-		tfPreferredLang.setTextLimit(2);
+		tfPreferredLanguage.setLayoutData(fd_tfPreferredLang);
+		tfPreferredLanguage.setTextLimit(2);
 		// TODO Set optimal textfield width
-		tfPreferredLang.pack();
+		tfPreferredLanguage.pack();
 
 		Link lblPreferredLangHelpText = new Link(container, SWT.NONE);
 		FormData fd_lblPreferredLangHelpText = new FormData();
-		fd_lblPreferredLangHelpText.left = new FormAttachment(tfPreferredLang,
+		fd_lblPreferredLangHelpText.left = new FormAttachment(tfPreferredLanguage,
 				6);
 		fd_lblPreferredLangHelpText.bottom = new FormAttachment(
-				tfPreferredLang, 0, SWT.BOTTOM);
+				tfPreferredLanguage, 0, SWT.BOTTOM);
 		lblPreferredLangHelpText.setLayoutData(fd_lblPreferredLangHelpText);
 		lblPreferredLangHelpText
 				.setText("(2-letter code according to <a href=\"http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1</a>)");
@@ -188,9 +224,9 @@ public class MapFileWizardPage extends WizardPage {
 		lblComment.setLayoutData(fd_lblComment);
 		lblComment.setText("Comment:");
 
-		Text tfComment = new Text(container, SWT.NONE);
+		tfComment = new Text(container, SWT.NONE);
 		FormData fd_tfComment = new FormData();
-		fd_tfComment.left = new FormAttachment(tfPreferredLang, 0, SWT.LEFT);
+		fd_tfComment.left = new FormAttachment(tfPreferredLanguage, 0, SWT.LEFT);
 		fd_tfComment.bottom = new FormAttachment(lblComment, 0, SWT.BOTTOM);
 		fd_tfComment.right = new FormAttachment(100, -6);
 		tfComment.setLayoutData(fd_tfComment);
@@ -216,21 +252,20 @@ public class MapFileWizardPage extends WizardPage {
 		expandItem.setControl(advancedOptions);
 		expandItem.setExpanded(true);
 
-		// TAG CONFIGURATION FILE
-		Button chkUseCustomTagConfigFile = new Button(advancedOptions,
+		enableUseCustomTagConfig = new Button(advancedOptions,
 				SWT.CHECK);
 		FormData td_chkUseCustomTagConfigFile = new FormData();
 		td_chkUseCustomTagConfigFile.left = new FormAttachment(0);
 		td_chkUseCustomTagConfigFile.top = new FormAttachment(0, 6);
-		chkUseCustomTagConfigFile.setLayoutData(td_chkUseCustomTagConfigFile);
-		chkUseCustomTagConfigFile.setText("Use custom tag configuration:");
+		enableUseCustomTagConfig.setLayoutData(td_chkUseCustomTagConfigFile);
+		enableUseCustomTagConfig.setText("Use custom tag configuration:");
 
-		Text tfTagConfigurationFilePath = new Text(advancedOptions, SWT.NONE);
+		tfTagConfigurationFilePath = new Text(advancedOptions, SWT.NONE);
 		FormData fd_tfTagConfigurationFilePath = new FormData();
 		fd_tfTagConfigurationFilePath.left = new FormAttachment(
-				chkUseCustomTagConfigFile, 6);
+				enableUseCustomTagConfig, 6);
 		fd_tfTagConfigurationFilePath.bottom = new FormAttachment(
-				chkUseCustomTagConfigFile, 0, SWT.BOTTOM);
+				enableUseCustomTagConfig, 0, SWT.BOTTOM);
 		tfTagConfigurationFilePath.setLayoutData(fd_tfTagConfigurationFilePath);
 		tfTagConfigurationFilePath.setText("fgsdlkfndklj");
 
@@ -246,18 +281,16 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_btnBrowseTagConfigurationFile);
 		btnBrowseTagConfigurationFile.setText("...");
 
-		// POLYGON CLIPPING
-		Button chkEnablePolygonClipping = new Button(advancedOptions, SWT.CHECK);
+		chkEnablePolygonClipping = new Button(advancedOptions, SWT.CHECK);
 		FormData fd_chkEnablePolygonClipping = new FormData();
 		fd_chkEnablePolygonClipping.top = new FormAttachment(
-				chkUseCustomTagConfigFile, 6);
+				enableUseCustomTagConfig, 6);
 		chkEnablePolygonClipping.setLayoutData(fd_chkEnablePolygonClipping);
 		chkEnablePolygonClipping
 				.setText("use polygon clipping to reduce map file size (minimal performance overhead)");
 		chkEnablePolygonClipping.setSelection(true);
 
-		// WAY CLIPPING
-		Button chkEnableWayClipping = new Button(advancedOptions, SWT.CHECK);
+		chkEnableWayClipping = new Button(advancedOptions, SWT.CHECK);
 		FormData fd_chkEnableWayClipping = new FormData();
 		fd_chkEnableWayClipping.top = new FormAttachment(
 				chkEnablePolygonClipping, 6);
@@ -266,8 +299,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Use way clipping to reduce map file size (minimal performance overhead)");
 		chkEnableWayClipping.setSelection(true);
 
-		// LABEL POSITION
-		Button chkComputeLabelPositions = new Button(advancedOptions, SWT.CHECK);
+		chkComputeLabelPositions = new Button(advancedOptions, SWT.CHECK);
 		FormData fd_chkComputeLabelPositions = new FormData();
 		chkComputeLabelPositions.setLayoutData(fd_chkComputeLabelPositions);
 		fd_chkComputeLabelPositions.top = new FormAttachment(
@@ -276,8 +308,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Compute label position for polygons that cover multiple tiles (minimal performance overhead)");
 		chkComputeLabelPositions.setSelection(true);
 
-		// DEBUG FILE
-		Button chkEnableDebugFile = new Button(advancedOptions, SWT.CHECK);
+		chkEnableDebugFile = new Button(advancedOptions, SWT.CHECK);
 		FormData fd_chkEnableDebugFile = new FormData();
 		fd_chkEnableDebugFile.top = new FormAttachment(
 				chkComputeLabelPositions, 6);
@@ -294,7 +325,7 @@ public class MapFileWizardPage extends WizardPage {
 		lblSimplificationFactor.setLayoutData(fd_lblSimplificationFactor);
 		lblSimplificationFactor.setText("Simplification factor: ");
 
-		Spinner inpSimplificationFactor = new Spinner(advancedOptions, SWT.NONE);
+		inpSimplificationFactor = new Spinner(advancedOptions, SWT.NONE);
 		FormData fd_inpSimplificationFactor = new FormData();
 		fd_inpSimplificationFactor.bottom = new FormAttachment(
 				lblSimplificationFactor, 0, SWT.CENTER);
@@ -313,7 +344,7 @@ public class MapFileWizardPage extends WizardPage {
 		lblBBEnlargement.setLayoutData(fd_lblBBEnlargement);
 		lblBBEnlargement.setText("Bounding box enlargement in px:");
 
-		Spinner inpBBEnlargement = new Spinner(advancedOptions, SWT.NONE);
+		inpBBEnlargement = new Spinner(advancedOptions, SWT.NONE);
 		FormData fd_inpBBEnlargement = new FormData();
 		fd_inpBBEnlargement.top = new FormAttachment(lblSimplificationFactor, 6);
 		fd_inpBBEnlargement.left = new FormAttachment(
@@ -388,9 +419,60 @@ public class MapFileWizardPage extends WizardPage {
 				+ container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
 		// EVENT LISTENERS
-
+		addEventListeners();
 		setValuesFromSettings();
+		onInputChanged();
 
+	}
+
+	/**
+	 * Adds event listeners to all components and invokes
+	 * {@link #onInputChanged()}.
+	 */
+	private void addEventListeners() {
+		// Map file path
+		this.tfOutputFilePath.addModifyListener(new ModifyListener() {
+
+			@Override
+			public void modifyText(ModifyEvent e) {
+				MapFileWizardPage.this.onInputChanged();
+			}
+		});
+
+		// Save as button
+		this.btnBrowseMapFile.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog dialog = new FileDialog(MapFileWizardPage.this
+						.getShell(), SWT.SAVE);
+				dialog.setFilterNames(new String[] { "Mapsforge Map File" });
+				dialog.setFilterExtensions(new String[] { "*.map" });
+				// XXX use System.getProperty here
+				dialog.setFilterPath("./");
+				// TODO Read basename from previous input
+				dialog.setFileName("out.map");
+				String selection = dialog.open();
+				if (selection != null) {
+					MapFileWizardPage.this.tfOutputFilePath.setText(selection);
+				}
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+		});
+		
+		// Checkboxes
+		this.chkEnableHDDCache.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkEnableCustomStartPosition.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkEnableCustomMapStartZoom.addSelectionListener(this.checkBoxSelectionListener);
+		this.enableUseCustomTagConfig.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkEnablePolygonClipping.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkEnableWayClipping.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkComputeLabelPositions.addSelectionListener(this.checkBoxSelectionListener);
+		this.chkEnableDebugFile.addSelectionListener(this.checkBoxSelectionListener);
 	}
 
 	/**
@@ -455,6 +537,7 @@ public class MapFileWizardPage extends WizardPage {
 	}
 
 	void onInputChanged() {
+		enableOrDisableControls();
 		boolean isValid = isPageComplete();
 
 		// Show / hide error message
@@ -465,11 +548,77 @@ public class MapFileWizardPage extends WizardPage {
 
 		setPageComplete(isValid);
 	}
+	
+	/**
+	 * Enables / disables controls according to specific checkbox states
+	 */
+	private void enableOrDisableControls() {
+		// Custom start position
+		this.tfMapStartLat.setEnabled(this.chkEnableCustomStartPosition.getSelection());
+		this.tfMapStartLon.setEnabled(this.chkEnableCustomStartPosition.getSelection());
+		
+		// Custom zoom level
+		this.inpMapStartZoom.setEnabled(this.chkEnableCustomMapStartZoom.getSelection());
+	}
 
 	private void updateSettings() {
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
-
+		
+		// Output file path
+		section.put("mapFilePath", this.tfOutputFilePath.getText());
+		
+		// Checkboxes
+		section.put("enableHDDCache", this.chkEnableHDDCache.getSelection());
+		section.put("enableCustomStartPosition", this.chkEnableCustomStartPosition.getSelection());
+		section.put("enableCustomStartZoomLevel", this.chkEnableCustomMapStartZoom.getSelection());
+		section.put("enableCustomTagConfig", this.enableUseCustomTagConfig.getSelection());
+		section.put("enablePolygonClipping", this.chkEnablePolygonClipping.getSelection());
+		section.put("enableWayClipping", this.chkEnableWayClipping.getSelection());
+		section.put("computeLabelPositions", this.chkComputeLabelPositions.getSelection());
+		section.put("enableDebugFile", this.chkEnableDebugFile.getSelection());
+		
+		// Start position
+		if(section.getBoolean("enableCustomStartPosition")) {
+			section.put("startPositionLat", this.tfMapStartLat.getText());
+			section.put("startPositionLon", this.tfMapStartLon.getText());
+		}
+		
+		// Map start zoom level
+		if(section.getBoolean("enableCustomStartZoomLevel")) {
+			section.put("mapZoomLevel", this.inpMapStartZoom.getSelection());
+		}
+		
+		// Preferred language
+		section.put("preferredLanguage", this.tfPreferredLanguage.getText());
+		
+		// Comment
+		section.put("comment", this.tfComment.getText());
+		
+		// Tag configuration
+		section.put("tagConfigurationFilePath", this.tfTagConfigurationFilePath.getText());
+		
+		// Simplification factor
+		section.put("simplificationFactor", this.inpSimplificationFactor.getSelection());
+		
+		// BB enlargement
+		section.put("BBEnlargement", this.inpBBEnlargement.getSelection());
+		
+		// Zoom interval configuration
+		StringBuilder sb = new StringBuilder();
+		for(TableItem i : this.inpZoomIntervalConfiguration.getItems()) {
+			sb.append(i.getText(0));
+			sb.append(",");
+			sb.append(i.getText(1));
+			sb.append(",");
+			sb.append(i.getText(2));
+			sb.append(",");
+		}
+		
+		if(sb.length() >= 1) {
+			System.out.println("Zoom interval config string: " + sb.substring(0, sb.length() - 1).toString());
+			section.put("zoomIntervalConfiguration", sb.substring(0, sb.length() - 1).toString());
+		}
 		System.out.println("Settings have been updated ");
 	}
 
