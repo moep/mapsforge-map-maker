@@ -28,15 +28,27 @@ class TaskConfigurationBuilder {
 	static enum TaskType {
 		READ_BINARY, READ_XML, MAP_WRITER, POI_WRITER;
 	}
-
+	
+	/**
+	 * Default constructor.
+	 */
 	TaskConfigurationBuilder() {
 		this.taskConfigurations = new LinkedList<TaskConfiguration>();
 	}
 	
+	/**
+	 * 
+	 * @return All generated task configurations.
+	 */
 	List<TaskConfiguration> getTaskConfigurations() {
 		return this.taskConfigurations;
 	}
 	
+	/**
+	 *  Constructs a new Osmosis task with given parameters  
+	 * @param taskType See {@link TaskType}.
+	 * @param params Array of text parameters as they were used by a command line call.
+	 */
 	void createAndAddTask(TaskType taskType, String... params) {
 		// First task must be a source task
 		if(taskConfigurations.size() == 0) {
@@ -68,6 +80,31 @@ class TaskConfigurationBuilder {
 		this.taskConfigurations.add(config);
 	}
 	
+	/**
+	 * Adds parameters to the last task constructed {@link Byte} {@link #createAndAddTask(TaskType, String...)}.
+	 * 
+	 * @param parameters Array of text parameters (key=value) as they were used by a command line call.
+	 */
+	void appendParameterToLastAddedTask(String ... parameters) {
+		TaskConfiguration config = this.taskConfigurations.getLast();
+		Map<String, String> configArgs = config.getConfigArgs();
+		
+		String tag[];
+		String defaultArg = null;
+		for(String p : parameters) {
+			tag = p.split("=", 2);
+			if(tag.length == 1 && defaultArg == null) {
+				defaultArg = p;
+			} 
+			if(tag.length == 2) {
+				configArgs.put(tag[0], tag[1]);
+			}
+		}
+	}
+	
+	/**
+	 * Inserts a tee task if more than one writer task exist.
+	 */
 	private void createAndInsertTeeTask() {
 		this.taskConfigurations.add(1, new TaskConfiguration("2-tee", "tee", EMPTY_PIPE_ARGS, EMPTY_PIPE_ARGS, null));
 	}

@@ -19,7 +19,7 @@ public class MainWizard extends Wizard {
 			System.out.println("[Wizard] Last used settings could not be used.");
 		}
 		
-//		setDialogSettings(settings);
+		setDialogSettings(settings);
 //		IWizardPage generalOptionsPage = new OptionSelectionWizardPage("General Settings", settings);
 //		addPage(generalOptionsPage);
 //		

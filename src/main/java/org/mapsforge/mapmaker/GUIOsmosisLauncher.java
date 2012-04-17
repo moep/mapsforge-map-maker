@@ -17,11 +17,10 @@ import org.mapsforge.mapmaker.logging.ProgressManager;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.pipeline.common.Pipeline;
 
-
-
-
 public class GUIOsmosisLauncher {
-	// TODO Where are these constants defined in SWT
+	// This multiplicator transforms a raw spinner value (stored as int) to its
+	// float representation.
+	private static final float SIMPLIFICATION_FACTOR_MULTIPLICATOR = 0.01f;
 
 	public static void main(String[] args) {
 		Display display = new Display();
@@ -34,56 +33,36 @@ public class GUIOsmosisLauncher {
 		int dialogExitCode = dialog.open();
 
 		// shell.dispose();
-//		display.dispose();
+		// display.dispose();
 
 		switch (dialogExitCode) {
-		case Window.OK:
-			System.out.println("[Main] Launching Osmosis");
-			ProgressGUI gui = ProgressGUI.getInstance();
-			try {
-				System.out.println("[Main] Saving settings");
-				w.getDialogSettings().save("lastSession.settings");
-			} catch (IOException e) {
-				// TODO Error message dialog
-				e.printStackTrace();
-			}
-			invokeOsmosisAsync(w.getDialogSettings());
-			System.out.println("[Main] Opening progress bar window");
-			gui.show(display);
+			case Window.OK:
+				System.out.println("[Main] Launching Osmosis");
+				ProgressGUI gui = ProgressGUI.getInstance();
+				try {
+					System.out.println("[Main] Saving settings");
+					w.getDialogSettings().save("lastSession.settings");
+				} catch (IOException e) {
+					// TODO Error message dialog
+					e.printStackTrace();
+				}
+				printSettings(w.getDialogSettings());
+				invokeOsmosisAsync(w.getDialogSettings());
+				System.out.println("[Main] Opening progress bar window");
+				gui.show(display);
 
-		case Window.CANCEL:
-			// System.out.println("Saving configuration");
-			// TODO offer save configuration if osmosis has finished gracefully
-			break;
-		default:
+			case Window.CANCEL:
+				// System.out.println("Saving configuration");
+				// TODO offer save configuration if osmosis has finished gracefully
+				break;
+			default:
 		}
 	}
 
 	private static void invokeOsmosisAsync(final IDialogSettings settings) {
 
 		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
-		IDialogSettings generalSection = settings.getSection("general");
-		IDialogSettings poiSection = settings.getSection("poi");
-
-		String inputFilePath = generalSection.get("inputFilePath");
-		// TODO handle error if file name does not have an extension
-		// defined
-		String inputFileType = inputFilePath.split("\\.(?=[^\\.]*$)")[1];
-		boolean createPOIs = generalSection.getBoolean("createPOIs");
-
-		// Input file task
-		if (inputFileType.equalsIgnoreCase("pbf")) {
-			builder.createAndAddTask(TaskType.READ_BINARY, inputFilePath);
-		} else if (inputFileType.equalsIgnoreCase("osm")) {
-			builder.createAndAddTask(TaskType.READ_XML, inputFilePath);
-		}
-
-		// POI task
-		if (createPOIs) {
-			String categoryConfigPath = poiSection.get("categoryConfigPath");
-			builder.createAndAddTask(TaskType.POI_WRITER, "test.poi",
-					"categoryConfigPath=" + categoryConfigPath, "gui-mode=true");
-		}
+		createTasks(settings, builder);
 
 		new Thread(new Runnable() {
 
@@ -93,8 +72,6 @@ public class GUIOsmosisLauncher {
 				System.out.println("[OsmosisThread] # Tasks: "
 						+ builder.getTaskConfigurations().size());
 				ProgressManager pm = ProgressGUI.getInstance();
-
-				
 
 				// Launch Osmosis
 				pm.start();
@@ -119,6 +96,65 @@ public class GUIOsmosisLauncher {
 
 	}
 
+	private static void createTasks(final IDialogSettings settings,
+			final TaskConfigurationBuilder builder) {
+		IDialogSettings generalSection = settings.getSection("general");
+		IDialogSettings poiSection = settings.getSection("poi");
+		IDialogSettings mapFileSection = settings.getSection("mapfile");
+
+		// TODO remove hard coded value
+		// boolean createPOIs = generalSection.getBoolean("createPOIs");
+		boolean createPOIs = true;
+		// boolean createMapFile = generalSection.getBoolean("createMapFile");
+		boolean createMapFile = false;
+
+		String inputFilePath = generalSection.get("inputFilePath");
+		// TODO handle error if file name does not have an extension
+		// defined
+		String inputFileType = inputFilePath.split("\\.(?=[^\\.]*$)")[1];
+
+		// INPUT FILE TASK
+		if (inputFileType.equalsIgnoreCase("pbf")) {
+			builder.createAndAddTask(TaskType.READ_BINARY, inputFilePath);
+		} else if (inputFileType.equalsIgnoreCase("osm")) {
+			builder.createAndAddTask(TaskType.READ_XML, inputFilePath);
+		}
+
+		// POI TASK
+		if (createPOIs) {
+			System.out.println("Creating POI task");
+			String categoryConfigPath = poiSection.get("categoryConfigPath");
+			builder.createAndAddTask(TaskType.POI_WRITER, "test.poi",
+					"categoryConfigPath=" + categoryConfigPath, "gui-mode=true");
+		}
+
+		// MAP FILE TASK
+		if (createMapFile) {
+			System.out.println("Creating mw task");
+			builder.createAndAddTask(TaskType.MAP_WRITER,
+					mapFileSection.get("mapFilePath"),
+					"type=" + (mapFileSection.getBoolean("enableHDDCache") ? "hd" : "ram"),
+					"polygon-clipping=" + mapFileSection.getBoolean("enablePolygonClipping"),
+					"way-clipping=" + mapFileSection.getBoolean("enableWayClipping"),
+					"label-position=" + mapFileSection.getBoolean("computeLabelPositions"),
+					"simplification-factor=" + mapFileSection.getInt("simplificationFactor")
+							* SIMPLIFICATION_FACTOR_MULTIPLICATOR,
+					"bbox-enlargement=" + mapFileSection.getInt("BBEnlargement"),
+					"zoom-interval-conf=" + mapFileSection.get("zoomIntervalConfiguration"),
+					"debug-file=" + mapFileSection.get("enableDebugFile")
+					);
+		}
+
+		// optional parameters
+		if (mapFileSection.getBoolean("enableCustomStartPosition")) {
+			builder.appendParameterToLastAddedTask("map-start-position=" +
+					mapFileSection.get("startPositionLat") + "," +
+					mapFileSection.get("startPositionLon")
+					);
+		}
+
+	}
+
 	private static void printSettings(IDialogSettings settings) {
 		System.out.println("#Sections: " + settings.getSections().length);
 		for (IDialogSettings s : settings.getSections()) {
@@ -138,6 +174,52 @@ public class GUIOsmosisLauncher {
 		IDialogSettings poiSection = settings.getSection("poi");
 		System.out.println("category config path: "
 				+ poiSection.get("categoryConfigPath"));
+
+		System.out.println("[Map File Settings]");
+		IDialogSettings mapFileSection = settings.getSection("mapfile");
+		System.out.println("Map File path: "
+				+ mapFileSection.getBoolean("mapFilePath"));
+		System.out.println("Enable HDD cache: "
+				+ mapFileSection.getBoolean("enableHDDCache"));
+		System.out.println("Enable custom start position: "
+				+ mapFileSection.getBoolean("enableCustomStartPosition"));
+		if (mapFileSection.getBoolean("enableCustomStartPosition") == true) {
+			System.out.println("  [*] Latitude / Longitude: "
+					+ mapFileSection.getInt("startPositionLat") + " / "
+					+ mapFileSection.getInt("startPositionLat"));
+		}
+		System.out.println("Enable custom start zoom level: "
+				+ mapFileSection.getBoolean("enableCustomStartZoomLevel"));
+		System.out.println("Enable custom tag config: "
+				+ mapFileSection.getBoolean("enableCustomTagConfig"));
+		if (mapFileSection.getBoolean("enableCustomTagConfig")) {
+			System.out.println("  [*] Tag configuration file path: "
+					+ mapFileSection.get("tagConfigurationFilePath"));
+		}
+		System.out.println("Enable polygon clipping: "
+				+ mapFileSection.getBoolean("enablePolygonClipping"));
+		System.out.println("Enable way clipping: "
+				+ mapFileSection.getBoolean("enableWayClipping"));
+		System.out.println("Compute label positions: "
+				+ mapFileSection.getBoolean("computeLabelPositions"));
+		System.out.println("Enable debug file: "
+				+ mapFileSection.getBoolean("enableDebugFile"));
+		
+		System.out.println("Enable custom start zoom level: "
+				+ mapFileSection.getBoolean("enableCustomStartZoomLevel"));
+		if (mapFileSection.getBoolean("enableCustomStartZoomLevel")) {
+			System.out.println("" + mapFileSection.getInt("mapZoomLevel"));
+		}
+		System.out.println("Preferred language: "
+				+ mapFileSection.get("preferredLanguage"));
+		System.out.println("Comment: " + mapFileSection.getBoolean("comment"));
+		System.out
+				.println("Simplification factor: "
+						+ (mapFileSection.getInt("simplificationFactor") * SIMPLIFICATION_FACTOR_MULTIPLICATOR));
+		System.out.println("Bounding box enlargement"
+				+ mapFileSection.getBoolean("BBEnlargement"));
+		System.out.println("Zoom interval configuration: "
+				+ mapFileSection.get("zoomIntervalConfiguration"));
 
 	}
 }

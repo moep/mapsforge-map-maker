@@ -616,10 +616,8 @@ public class MapFileWizardPage extends WizardPage {
 		}
 		
 		if(sb.length() >= 1) {
-			System.out.println("Zoom interval config string: " + sb.substring(0, sb.length() - 1).toString());
 			section.put("zoomIntervalConfiguration", sb.substring(0, sb.length() - 1).toString());
 		}
-		System.out.println("Settings have been updated ");
 	}
 
 	@Override
