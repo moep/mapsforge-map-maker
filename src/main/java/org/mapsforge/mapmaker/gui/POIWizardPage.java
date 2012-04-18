@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class POIWizardPage extends WizardPage {
+	private static final String SETTINGS_SECTION_NAME = "poi";
 	private String categoryConfigPath = "POICategoriesOsmosis.xml";
 	private IDialogSettings settings;
 	
@@ -31,7 +32,11 @@ public class POIWizardPage extends WizardPage {
 		setTitle(pageName);
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
 		this.settings = settings;
-		this.settings.addNewSection("poi");
+		this.settings.addNewSection(SETTINGS_SECTION_NAME);
+	}
+	
+	public static String getSettingsSectionName() {
+		return SETTINGS_SECTION_NAME;
 	}
 
 	@Override
@@ -107,9 +112,10 @@ public class POIWizardPage extends WizardPage {
 	}
 	
 	private void updateSettings() {
-		IDialogSettings section = this.settings.getSection("poi");
+		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
 		section.put("categoryConfigPath", this.tfCategoryConfigPath.getText());
-		
+		// TODO create inputs for output file path
+		section.put("outputFilePath", "out.poi");
 		System.out.println("Settings have been updated ");
 	}
 	

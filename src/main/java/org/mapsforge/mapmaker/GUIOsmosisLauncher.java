@@ -10,7 +10,6 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.mapsforge.mapmaker.TaskConfigurationBuilder.TaskType;
 import org.mapsforge.mapmaker.gui.MainWizard;
 import org.mapsforge.mapmaker.gui.ProgressGUI;
 import org.mapsforge.mapmaker.logging.ProgressManager;
@@ -18,9 +17,6 @@ import org.openstreetmap.osmosis.core.TaskRegistrar;
 import org.openstreetmap.osmosis.core.pipeline.common.Pipeline;
 
 public class GUIOsmosisLauncher {
-	// This multiplicator transforms a raw spinner value (stored as int) to its
-	// float representation.
-	private static final float SIMPLIFICATION_FACTOR_MULTIPLICATOR = 0.01f;
 
 	public static void main(String[] args) {
 		Display display = new Display();
@@ -62,7 +58,7 @@ public class GUIOsmosisLauncher {
 	private static void invokeOsmosisAsync(final IDialogSettings settings) {
 
 		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
-		createTasks(settings, builder);
+		builder.buildTaskConfigurationFromDialogSettings(settings);
 
 		new Thread(new Runnable() {
 
@@ -93,65 +89,6 @@ public class GUIOsmosisLauncher {
 			}
 
 		}).start();
-
-	}
-
-	private static void createTasks(final IDialogSettings settings,
-			final TaskConfigurationBuilder builder) {
-		IDialogSettings generalSection = settings.getSection("general");
-		IDialogSettings poiSection = settings.getSection("poi");
-		IDialogSettings mapFileSection = settings.getSection("mapfile");
-
-		// TODO remove hard coded value
-		// boolean createPOIs = generalSection.getBoolean("createPOIs");
-		boolean createPOIs = true;
-		// boolean createMapFile = generalSection.getBoolean("createMapFile");
-		boolean createMapFile = false;
-
-		String inputFilePath = generalSection.get("inputFilePath");
-		// TODO handle error if file name does not have an extension
-		// defined
-		String inputFileType = inputFilePath.split("\\.(?=[^\\.]*$)")[1];
-
-		// INPUT FILE TASK
-		if (inputFileType.equalsIgnoreCase("pbf")) {
-			builder.createAndAddTask(TaskType.READ_BINARY, inputFilePath);
-		} else if (inputFileType.equalsIgnoreCase("osm")) {
-			builder.createAndAddTask(TaskType.READ_XML, inputFilePath);
-		}
-
-		// POI TASK
-		if (createPOIs) {
-			System.out.println("Creating POI task");
-			String categoryConfigPath = poiSection.get("categoryConfigPath");
-			builder.createAndAddTask(TaskType.POI_WRITER, "test.poi",
-					"categoryConfigPath=" + categoryConfigPath, "gui-mode=true");
-		}
-
-		// MAP FILE TASK
-		if (createMapFile) {
-			System.out.println("Creating mw task");
-			builder.createAndAddTask(TaskType.MAP_WRITER,
-					mapFileSection.get("mapFilePath"),
-					"type=" + (mapFileSection.getBoolean("enableHDDCache") ? "hd" : "ram"),
-					"polygon-clipping=" + mapFileSection.getBoolean("enablePolygonClipping"),
-					"way-clipping=" + mapFileSection.getBoolean("enableWayClipping"),
-					"label-position=" + mapFileSection.getBoolean("computeLabelPositions"),
-					"simplification-factor=" + mapFileSection.getInt("simplificationFactor")
-							* SIMPLIFICATION_FACTOR_MULTIPLICATOR,
-					"bbox-enlargement=" + mapFileSection.getInt("BBEnlargement"),
-					"zoom-interval-conf=" + mapFileSection.get("zoomIntervalConfiguration"),
-					"debug-file=" + mapFileSection.get("enableDebugFile")
-					);
-		}
-
-		// optional parameters
-		if (mapFileSection.getBoolean("enableCustomStartPosition")) {
-			builder.appendParameterToLastAddedTask("map-start-position=" +
-					mapFileSection.get("startPositionLat") + "," +
-					mapFileSection.get("startPositionLon")
-					);
-		}
 
 	}
 
@@ -215,7 +152,7 @@ public class GUIOsmosisLauncher {
 		System.out.println("Comment: " + mapFileSection.getBoolean("comment"));
 		System.out
 				.println("Simplification factor: "
-						+ (mapFileSection.getInt("simplificationFactor") * SIMPLIFICATION_FACTOR_MULTIPLICATOR));
+						+ (mapFileSection.getInt("simplificationFactor") * 0.01));
 		System.out.println("Bounding box enlargement"
 				+ mapFileSection.getBoolean("BBEnlargement"));
 		System.out.println("Zoom interval configuration: "

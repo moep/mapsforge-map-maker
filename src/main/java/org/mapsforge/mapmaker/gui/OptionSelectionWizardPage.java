@@ -45,7 +45,11 @@ public class OptionSelectionWizardPage extends WizardPage {
 			this.settings.addNewSection(SETTINGS_SECTION_NAME);
 		}
 	}
-
+	
+	public static String getSettingsSectionName() {
+		return SETTINGS_SECTION_NAME;
+	}
+	
 	@Override
 	public void createControl(final Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
