@@ -28,6 +28,7 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskConfiguration;
 class TaskConfigurationBuilder {
 	private LinkedList<TaskConfiguration> taskConfigurations;
 	private static final Map<String, String> EMPTY_PIPE_ARGS = new HashMap<String, String>();
+	
 
 	static enum TaskType {
 		READ_BINARY, READ_XML, MAP_WRITER, POI_WRITER;
@@ -37,7 +38,7 @@ class TaskConfigurationBuilder {
 	 * This multiplicator transforms a raw spinner value (stored as int) to its
 	 * float representation.
 	 */
-	private static final float SIMPLIFICATION_FACTOR_MULTIPLICATOR = 0.01f;
+	static final float SIMPLIFICATION_FACTOR_MULTIPLICATOR = 0.01f;
 
 	/**
 	 * Default constructor.
@@ -103,12 +104,20 @@ class TaskConfigurationBuilder {
 	 *            Array of text parameters (key=value) as they were used by a
 	 *            command line call.
 	 */
-	void appendParameterToLastAddedTask(String... parameters) {
+	void appendParametersToLastAddedTask(String... parameters) {
 		TaskConfiguration config = this.taskConfigurations.getLast();
-		Map<String, String> configArgs = config.getConfigArgs();
+
+		// Create a new task configuration as the current configurations's
+		// values cannot be changed
+		Map<String, String> configArgs = new HashMap<String, String>(
+				config.getConfigArgs());
+		Map<String, String> pipeArgs = new HashMap<String, String>(
+				config.getPipeArgs());
+		String defaultArg = config.getDefaultArg();
+		String id = config.getId();
+		String type = config.getType();
 
 		String tag[];
-		String defaultArg = null;
 		for (String p : parameters) {
 			tag = p.split("=", 2);
 			if (tag.length == 1 && defaultArg == null) {
@@ -118,6 +127,12 @@ class TaskConfigurationBuilder {
 				configArgs.put(tag[0], tag[1]);
 			}
 		}
+
+		// Replace config with an updated one
+		TaskConfiguration configNew = new TaskConfiguration(id, type, pipeArgs,
+				configArgs, defaultArg);
+		this.taskConfigurations.removeLast();
+		this.taskConfigurations.add(configNew);
 	}
 
 	/**
@@ -143,14 +158,9 @@ class TaskConfigurationBuilder {
 				.getSettingsSectionName());
 		IDialogSettings mapFileSection = settings.getSection(MapFileWizardPage
 				.getSettingsSectionName());
-		
-		System.out.println("Settings sections: " + settings.getSections().length);
-		System.out.println("Name: " + settings.getSections()[0].getName());
-		System.out.println("Name: " + settings.getSections()[1].getName());
-		System.out.println("mapfilesection==null" + (mapFileSection == null));
 
 		boolean createPOIs = generalSection.getBoolean("createPOIs");
-		boolean createMapFile = generalSection.getBoolean("createMapFile");
+		boolean createMapFile = generalSection.getBoolean("createVectorMap");
 
 		String inputFilePath = generalSection.get("inputFilePath");
 		// TODO handle error if file name does not have an extension
@@ -166,7 +176,6 @@ class TaskConfigurationBuilder {
 
 		// POI TASK
 		if (createPOIs) {
-			System.out.println("Creating POI task");
 			String categoryConfigPath = poiSection.get("categoryConfigPath");
 			String outputFilePath = poiSection.get("outputFilePath");
 			createAndAddTask(TaskType.POI_WRITER, outputFilePath,
@@ -175,13 +184,18 @@ class TaskConfigurationBuilder {
 
 		// MAP FILE TASK
 		if (createMapFile) {
-			System.out.println("Creating mw task");
 			createAndAddTask(
 					TaskType.MAP_WRITER,
 					mapFileSection.get("mapFilePath"),
 					"type="
 							+ (mapFileSection.getBoolean("enableHDDCache") ? "hd"
 									: "ram"),
+					"bbox=" + mapFileSection.get("BBMinLat") + ","
+							+ mapFileSection.get("BBMinLon") + ","
+							+ mapFileSection.get("BBMaxLat") + ","
+							+ mapFileSection.get("BBMaxLon"),
+					"preferred-language="
+							+ mapFileSection.get("preferredLanguage"),
 					"polygon-clipping="
 							+ mapFileSection
 									.getBoolean("enablePolygonClipping"),
@@ -198,15 +212,30 @@ class TaskConfigurationBuilder {
 					"zoom-interval-conf="
 							+ mapFileSection.get("zoomIntervalConfiguration"),
 					"debug-file=" + mapFileSection.get("enableDebugFile"));
-			
+
 			// TODO add gui-mode=true as parameter (hook Osmosis plugin first)
 
 			// optional parameters
-			// TODO finish
 			if (mapFileSection.getBoolean("enableCustomStartPosition")) {
-				appendParameterToLastAddedTask("map-start-position="
+				appendParametersToLastAddedTask("map-start-position="
 						+ mapFileSection.get("startPositionLat") + ","
 						+ mapFileSection.get("startPositionLon"));
+			}
+
+			if (mapFileSection.getBoolean("enableCustomStartZoomLevel")) {
+				appendParametersToLastAddedTask("map-start-zoom="
+						+ mapFileSection.get("mapZoomLevel"));
+			}
+
+			if (mapFileSection.getBoolean("enableCustomTagConfig")) {
+				appendParametersToLastAddedTask("tag-conf-file="
+						+ mapFileSection.get("tagConfigurationFilePath"));
+			}
+
+			if (mapFileSection.get("comment") != null
+					&& !mapFileSection.get("comment").isEmpty()) {
+				appendParametersToLastAddedTask("comment="
+						+ mapFileSection.get("comment"));
 			}
 
 		}
