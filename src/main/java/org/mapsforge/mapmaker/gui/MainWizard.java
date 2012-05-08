@@ -32,16 +32,14 @@ public class MainWizard extends Wizard {
 				"General Settings", settings);
 		addPage(generalOptionsPage);
 
-		IWizardPage poiOptionsPage = new POIWizardPage("POI Settings", settings);
-		addPage(poiOptionsPage);
-
 		IWizardPage mapFileOptionsPage = new MapFileWizardPage(
-				"Mapfile Settings", settings);
+				MapFileWizardPage.getStaticTitle(), settings);
 		addPage(mapFileOptionsPage);
 
-		// IWizardPage scrollIWizardPage = new
-		// ScrollWizardPage("Mapfile Settings");
-		// addPage(scrollIWizardPage);
+		IWizardPage poiOptionsPage = new POIWizardPage(POIWizardPage.getStaticTitle(), settings);
+		addPage(poiOptionsPage);
+		
+		WizardPageManager.getInstance().initialize(this);
 	}
 
 	public static String getSettingsSectionName() {

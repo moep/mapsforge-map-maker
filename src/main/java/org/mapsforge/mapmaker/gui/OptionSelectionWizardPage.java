@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -25,9 +26,10 @@ import org.eclipse.swt.widgets.Text;
 
 public class OptionSelectionWizardPage extends WizardPage {
 	private String inputFilePath;
-	private IDialogSettings settings; 
+	private IDialogSettings settings;
 	private final static String SETTINGS_SECTION_NAME = "general";
-	
+	private IWizardPage nextWizardPage = null;
+
 	protected Text tfInputFilePath;
 	private FormData fd_text;
 	private Button btnOpenFile;
@@ -41,15 +43,15 @@ public class OptionSelectionWizardPage extends WizardPage {
 		setTitle(pageName);
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
 		this.settings = settings;
-		if(this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
+		if (this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
 			this.settings.addNewSection(SETTINGS_SECTION_NAME);
 		}
 	}
-	
+
 	public static String getSettingsSectionName() {
 		return SETTINGS_SECTION_NAME;
 	}
-	
+
 	@Override
 	public void createControl(final Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
@@ -62,24 +64,25 @@ public class OptionSelectionWizardPage extends WizardPage {
 		createCheckBoxes(container);
 		setValuesFromSettings();
 	}
-	
-	
+
 	/**
-	 * Reads last used values from settings object and sets form elements' values accordingly.
+	 * Reads last used values from settings object and sets form elements'
+	 * values accordingly.
 	 */
 	private void setValuesFromSettings() {
 		System.out.println("[WizardPage] Applying setting values");
-		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
-		
+		IDialogSettings section = this.settings
+				.getSection(SETTINGS_SECTION_NAME);
+
 		// Text field
-		if(section.get("inputFilePath") != null) {
+		if (section.get("inputFilePath") != null) {
 			this.inputFilePath = section.get("inputFilePath");
 			this.tfInputFilePath.setText(section.get("inputFilePath"));
 		}
-		
+
 		// Checkboxes
 		this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
-		
+
 		// Validate inputs
 		onInputChanged();
 	}
@@ -89,7 +92,6 @@ public class OptionSelectionWizardPage extends WizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				onInputChanged();
-				// TODO update wizard next page list
 			}
 		};
 
@@ -101,8 +103,8 @@ public class OptionSelectionWizardPage extends WizardPage {
 		fd_chkBoxCreateVectorMap.top = new FormAttachment(this.link, 6);
 		fd_chkBoxCreateVectorMap.left = new FormAttachment(0);
 		this.ckboxCreateVectorMap.setLayoutData(fd_chkBoxCreateVectorMap);
-		this.ckboxCreateVectorMap.setText("Create Vector Map (unavailable)");
-		this.ckboxCreateVectorMap.setEnabled(false);
+		this.ckboxCreateVectorMap.setText("Create Vector Map");
+		// this.ckboxCreateVectorMap.setEnabled(false);
 		this.ckboxCreateVectorMap.addSelectionListener(selectionListener);
 
 		// POIs
@@ -193,17 +195,27 @@ public class OptionSelectionWizardPage extends WizardPage {
 			setErrorMessage(null);
 			updateSettings();
 		}
-		
-		setPageComplete(isValid);				
+
+		setPageComplete(isValid);
 	}
-	
+
 	private void updateSettings() {
-		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
+		IDialogSettings section = this.settings
+				.getSection(SETTINGS_SECTION_NAME);
 		section.put("inputFilePath", this.tfInputFilePath.getText());
 		section.put("createVectorMap", this.ckboxCreateVectorMap.getSelection());
 		section.put("createPOIs", this.ckboxCreatePOIs.getSelection());
-		
-		System.out.println("[WizardPage] Settings have been updated.");
+
+		// System.out.println("[WizardPage] Settings have been updated.");
+
+		WizardPageManager.getInstance().setWizardPageEnabled(
+				MapFileWizardPage.getStaticTitle(), this.ckboxCreateVectorMap.getSelection());
+
+		WizardPageManager.getInstance().setWizardPageEnabled(
+				POIWizardPage.getStaticTitle(), this.ckboxCreatePOIs.getSelection());
+
+		System.out.println("Config: ");
+		System.out.println(WizardPageManager.getInstance());
 	}
 
 	@Override
@@ -247,7 +259,9 @@ public class OptionSelectionWizardPage extends WizardPage {
 
 		return isValid;
 	}
-	
-	
 
+	@Override
+	public IWizardPage getNextPage() {
+		return WizardPageManager.getInstance().getNextWizardPage(this);
+	}
 }
