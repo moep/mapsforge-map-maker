@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -21,10 +22,12 @@ import org.eclipse.swt.widgets.Text;
 
 public class POIWizardPage extends WizardPage {
 	private static final String SETTINGS_SECTION_NAME = "poi";
-	private String categoryConfigPath = "POICategoriesOsmosis.xml";
+	private static final String TITLE = "POI Settings";
+	private String defaultCategoryConfigPath = "POICategoriesOsmosis.xml";
 	private IDialogSettings settings;
-	
+
 	private Text tfCategoryConfigPath;
+	private Text tfOutputFilePath;
 
 	protected POIWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
@@ -34,9 +37,13 @@ public class POIWizardPage extends WizardPage {
 		this.settings = settings;
 		this.settings.addNewSection(SETTINGS_SECTION_NAME);
 	}
-	
+
 	public static String getSettingsSectionName() {
 		return SETTINGS_SECTION_NAME;
+	}
+	
+	static String getStaticTitle() {
+		return TITLE;
 	}
 
 	@Override
@@ -44,61 +51,111 @@ public class POIWizardPage extends WizardPage {
 		final Composite container = new Composite(parent, SWT.NULL);
 		setControl(container);
 		container.setLayout(new FormLayout());
-		
+
+		// OUTPUT FILE PATH
+		Label lblOuptufFile = new Label(container, SWT.NONE);
+		FormData fd_lblOuptufFile = new FormData();
+		fd_lblOuptufFile.top = new FormAttachment(0);
+		fd_lblOuptufFile.left = new FormAttachment(0);
+		fd_lblOuptufFile.right = new FormAttachment(100);
+		lblOuptufFile.setLayoutData(fd_lblOuptufFile);
+		lblOuptufFile.setText("Output file: ");
+
+		tfOutputFilePath = new Text(container, SWT.BORDER);
+		FormData fd_tfOutputFilePath = new FormData();
+		fd_tfOutputFilePath.top = new FormAttachment(lblOuptufFile, 6);
+		fd_tfOutputFilePath.left = new FormAttachment(0);
+		tfOutputFilePath.setLayoutData(fd_tfOutputFilePath);
+		tfOutputFilePath.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setOutputFilePath(((Text) e.widget).getText());
+			}
+		});
+
+		Button btnBrowsePOIFile = new Button(container, SWT.PUSH);
+		fd_tfOutputFilePath.right = new FormAttachment(btnBrowsePOIFile, -6);
+		FormData fd_btnBrowsePOIFile = new FormData();
+		fd_btnBrowsePOIFile.top = new FormAttachment(tfOutputFilePath, 0,
+				SWT.CENTER);
+		fd_btnBrowsePOIFile.right = new FormAttachment(100);
+		btnBrowsePOIFile.setLayoutData(fd_btnBrowsePOIFile);
+		btnBrowsePOIFile.setText("...");
+		btnBrowsePOIFile.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog d = new FileDialog(container.getShell());
+				d.setFilterPath(System.getProperty("user.dir"));
+				d.setFilterExtensions(new String[] { "*.poi" });
+				String selection = d.open();
+				setOutputFilePath(selection);
+			}
+
+		});
+
+		// CATEGORY CONFIG FILE
 		Label lblSelectFile = new Label(container, SWT.NONE);
-		FormData fd_lblNewLabel = new FormData();
-		fd_lblNewLabel.right = new FormAttachment(0, 588);
-		fd_lblNewLabel.top = new FormAttachment(0);
-		fd_lblNewLabel.left = new FormAttachment(0);
-		lblSelectFile.setLayoutData(fd_lblNewLabel);
+		FormData fd_lblSelectFile = new FormData();
+		fd_lblSelectFile.top = new FormAttachment(tfOutputFilePath, 6);
+		fd_lblSelectFile.left = new FormAttachment(0);
+		fd_lblSelectFile.right = new FormAttachment(100);
+		lblSelectFile.setLayoutData(fd_lblSelectFile);
 		lblSelectFile.setText("Category Mapping Configuration File:");
-		
+
 		tfCategoryConfigPath = new Text(container, SWT.BORDER);
-		tfCategoryConfigPath.setText(this.categoryConfigPath);
-		FormData fd_text = new FormData();
-		fd_text.top = new FormAttachment(lblSelectFile, 6);
-		fd_text.left = new FormAttachment(lblSelectFile, 0, SWT.LEFT);
-		tfCategoryConfigPath.setLayoutData(fd_text);
+		FormData fd_tfCategoryConfigPath = new FormData();
+		fd_tfCategoryConfigPath.top = new FormAttachment(lblSelectFile, 6);
+		fd_tfCategoryConfigPath.left = new FormAttachment(lblSelectFile, 0,
+				SWT.LEFT);
+		tfCategoryConfigPath.setLayoutData(fd_tfCategoryConfigPath);
+		tfCategoryConfigPath.setText(this.defaultCategoryConfigPath);
 		tfCategoryConfigPath.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				setCategoryConfigPath(((Text) e.widget).getText());
 			}
 		});
-		
+
 		Button btnOpenFile = new Button(container, SWT.NONE);
+		fd_tfCategoryConfigPath.right = new FormAttachment(btnOpenFile, -6);
+		FormData fd_btnOpenFile = new FormData();
+		fd_btnOpenFile.top = new FormAttachment(tfCategoryConfigPath, 0,
+				SWT.CENTER);
+		fd_btnOpenFile.right = new FormAttachment(100);
+		btnOpenFile.setLayoutData(fd_btnOpenFile);
+		btnOpenFile.setText("...");
 		btnOpenFile.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog d = new FileDialog(container.getShell());
 				d.setFilterPath(System.getProperty("user.dir"));
-				d.setFilterExtensions(new String[] { "*.xml" });				
+				d.setFilterExtensions(new String[] { "*.xml" });
 				String selection = d.open();
 				setCategoryConfigPath(selection);
 			}
 
 		});
-		fd_text.right = new FormAttachment(btnOpenFile, -6);
-		FormData fd_btnOpenFile = new FormData();
-		fd_btnOpenFile.top = new FormAttachment(lblSelectFile);
-		fd_btnOpenFile.right = new FormAttachment(100, -10);
-		btnOpenFile.setLayoutData(fd_btnOpenFile);
-		btnOpenFile.setText("...");
-		
+
 		// Validate default values
 		onInputChanged();
 	}
-	
+
+	protected void setOutputFilePath(String path) {
+		System.out.println("Set output file path: " + path);
+		if (path != null && !path.equals(this.tfOutputFilePath.getText())) {
+			this.tfOutputFilePath.setText(path);
+		}
+		onInputChanged();
+	}
+
 	protected void setCategoryConfigPath(String path) {
-		this.categoryConfigPath = path;
-		
 		if (path != null && !path.equals(this.tfCategoryConfigPath.getText())) {
 			this.tfCategoryConfigPath.setText(path);
 		}
-		
 		onInputChanged();
+
 	}
-	
+
 	void onInputChanged() {
 		boolean isValid = isPageComplete();
 
@@ -107,31 +164,31 @@ public class POIWizardPage extends WizardPage {
 			setErrorMessage(null);
 			updateSettings();
 		}
-		
-		setPageComplete(isValid);				
+
+		setPageComplete(isValid);
 	}
-	
+
 	private void updateSettings() {
-		IDialogSettings section = this.settings.getSection(SETTINGS_SECTION_NAME);
+		IDialogSettings section = this.settings
+				.getSection(SETTINGS_SECTION_NAME);
 		section.put("categoryConfigPath", this.tfCategoryConfigPath.getText());
 		// TODO create inputs for output file path
-		section.put("outputFilePath", "out.poi");
+		section.put("outputFilePath", this.tfOutputFilePath.getText());
 		System.out.println("Settings have been updated ");
 	}
-	
+
 	@Override
 	public boolean isPageComplete() {
 		boolean isValid = true;
 
-		// Input file must be set
-		if (this.categoryConfigPath == null) {
-			super.setErrorMessage("No file selected.");
-			isValid = false;
+		// Output file may not be empty
+		if (this.tfOutputFilePath.getText().equals("")) {
+			super.setErrorMessage("No output file has been specified.");
 		}
 
-		// Input file must exist be a file and be writable
-		if (this.categoryConfigPath != null) {
-			File f = new File(this.categoryConfigPath);
+		// Category config file must exist be a file and be writable
+		if (this.tfCategoryConfigPath.getText() != null) {
+			File f = new File(this.tfCategoryConfigPath.getText());
 
 			if (isValid && !f.exists()) {
 				super.setErrorMessage("The given input file does not exist. ("
@@ -150,8 +207,15 @@ public class POIWizardPage extends WizardPage {
 			}
 
 		}
-		
+
 		return isValid;
 	}
 	
+	@Override
+	public IWizardPage getNextPage() {
+		System.out.println("Get next page: " + super.getNextPage());
+		return null;
+		
+	}
+
 }

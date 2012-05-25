@@ -1,2 +1,10 @@
 test.poi*
 lastSession.settings
+/.classpath
+/target
+/.pmd_ruleset.xml
+/.checkstyle
+/.pmd
+/.project
+/.checkstyle_rules.xml
+/.settings
