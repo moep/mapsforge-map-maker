@@ -23,9 +23,9 @@ public class GUIOsmosisLauncher {
 		Shell shell = new Shell(display);
 
 		// Launch wizard
-		Wizard w = new MainWizard();
-		WizardDialog dialog = new WizardDialog(shell, w);
-		Window.setDefaultImage(new Image(display, "logo.png"));
+        Wizard w = new MainWizard();
+        WizardDialog dialog = new WizardDialog(shell, w);
+        Window.setDefaultImage(new Image(display, "logo.png"));
 		int dialogExitCode = dialog.open();
 
 		// shell.dispose();

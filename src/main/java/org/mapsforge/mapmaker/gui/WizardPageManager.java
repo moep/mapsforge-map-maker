@@ -1,5 +1,8 @@
 package org.mapsforge.mapmaker.gui;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
@@ -9,9 +12,8 @@ import org.eclipse.jface.wizard.WizardPage;
  * {@link WizardPage}s.
  * 
  * @author Karsten Groll
- * 
  */
-public class WizardPageManager {
+class WizardPageManager {
 	private static WizardPageManager instance = null;
 	private Wizard mainWizard = null;
 	private boolean enabledPagesMask[];
@@ -59,16 +61,15 @@ public class WizardPageManager {
 		if (pos > pages.length - 1) {
 			return null;
 		}
-		
+
 		return pages[pos];
 	}
 
 	void setWizardPageEnabled(String title, boolean flag) {
 		IWizardPage page = this.mainWizard.getPage(title);
 		int pos = getPosForPage(page);
-		
-		
-		if(pos != -1 && pos < this.enabledPagesMask.length - 1) {
+
+		if (pos != -1 && pos < this.enabledPagesMask.length) {
 			this.enabledPagesMask[pos] = flag;
 		} else {
 			// TODO error handling (exceptions?)
@@ -84,11 +85,12 @@ public class WizardPageManager {
 	 *         not contain the page.
 	 */
 	private int getPosForPage(IWizardPage page) {
-		IWizardPage pages[] = this.mainWizard.getPages();
+		IWizardPage[] pages = this.mainWizard.getPages();
 		int pos;
 		for (pos = 0; pos < pages.length; pos++) {
-			if (page == pages[pos])
+			if (page == pages[pos]) {
 				break;
+			}
 		}
 
 		// Page not found
@@ -99,19 +101,34 @@ public class WizardPageManager {
 		return pos;
 	}
 
+	Collection<IWizardPage> getEnabledPages() {
+		IWizardPage[] pages = this.mainWizard.getPages();
+		Collection<IWizardPage> enabledPages = new LinkedList<IWizardPage>();
+
+		for (int i = 0; i < this.enabledPagesMask.length; i++) {
+			if (this.enabledPagesMask[i]) {
+				enabledPages.add(pages[i]);
+			}
+		}
+
+		return enabledPages;
+
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		IWizardPage pages[] = this.mainWizard.getPages();
-		
-		for(int i = 0; i < this.enabledPagesMask.length; i++) {
-			if(this.enabledPagesMask[i]) {
+
+		sb.append('[');
+		for (int i = 0; i < this.enabledPagesMask.length; i++) {
+			if (this.enabledPagesMask[i]) {
 				sb.append(pages[i].getTitle());
-				sb.append(" --> ");
+				sb.append(", ");
 			}
 		}
-		
-		sb.append("NULL");
+
+		sb.append("]");
 		return sb.toString();
 	}
 }

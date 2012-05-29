@@ -18,9 +18,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.mapsforge.mapmaker.logging.ProgressManager;
 
 public class ProgressGUI implements ProgressManager {
-	private static ProgressGUI instance;
-	private boolean isInitialized = false;
-	private boolean isFinished = false;
+    private static ProgressGUI instance;
+    private boolean isInitialized = false;
+    private boolean isFinished = false;
 
 	final int PADDING = 4;
 
@@ -263,11 +263,11 @@ public class ProgressGUI implements ProgressManager {
 	public void start() {
 		this.isFinished = false;
 		// Block until the GUI has been fully initialized
-		synchronized (instance) {
+		synchronized (this.instance) {
 			while (!this.isInitialized) {
 				System.out.println("[GUI] Waiting for initialization to finish");
 				try {
-					instance.wait();
+					this.instance.wait();
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}

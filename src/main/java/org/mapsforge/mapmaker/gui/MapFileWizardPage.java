@@ -34,8 +34,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ExpandBar;
-import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -304,33 +302,15 @@ public class MapFileWizardPage extends WizardPage {
 		// ADVANCED SETTINGS
 		//
 
-		final ExpandBar bar = new ExpandBar(container, SWT.NONE);
-		// TODO remove hard-coded dimensions
-		// FormData fd_Bar = new FormData(SWT.DEFAULT, 500);
-		FormData fd_Bar = new FormData(SWT.DEFAULT, SWT.DEFAULT);
-		fd_Bar.left = new FormAttachment(0);
-		fd_Bar.right = new FormAttachment(100);
-		fd_Bar.top = new FormAttachment(lblComment, 6);
-		// tmp.bottom = new FormAttachment(100);
-		bar.setLayoutData(fd_Bar);
-
-		final Composite advancedOptions = new Composite(bar, SWT.NONE);
-		advancedOptions.setLayout(new FormLayout());
-		ExpandItem expandItem = new ExpandItem(bar, SWT.NONE, 0);
-		expandItem
-				.setText("Advanced Options (only use when you know what you are doing)");
-		expandItem.setControl(advancedOptions);
-		expandItem.setExpanded(false);
-
-		chkEnableUseCustomTagConfig = new Button(advancedOptions, SWT.CHECK);
+		chkEnableUseCustomTagConfig = new Button(container, SWT.CHECK);
 		FormData td_chkEnableUseCustomTagConfig = new FormData();
 		td_chkEnableUseCustomTagConfig.left = new FormAttachment(0);
-		td_chkEnableUseCustomTagConfig.top = new FormAttachment(0, 6);
+		td_chkEnableUseCustomTagConfig.top = new FormAttachment(tfComment, 6);
 		chkEnableUseCustomTagConfig
 				.setLayoutData(td_chkEnableUseCustomTagConfig);
 		chkEnableUseCustomTagConfig.setText("Use custom tag configuration:");
 
-		tfTagConfigurationFilePath = new Text(advancedOptions, SWT.NONE);
+		tfTagConfigurationFilePath = new Text(container, SWT.NONE);
 		FormData fd_tfTagConfigurationFilePath = new FormData();
 		fd_tfTagConfigurationFilePath.left = new FormAttachment(
 				chkEnableUseCustomTagConfig, 6);
@@ -339,8 +319,7 @@ public class MapFileWizardPage extends WizardPage {
 		tfTagConfigurationFilePath.setLayoutData(fd_tfTagConfigurationFilePath);
 		tfTagConfigurationFilePath.setText("fgsdlkfndklj");
 
-		Button btnBrowseTagConfigurationFile = new Button(advancedOptions,
-				SWT.PUSH);
+		Button btnBrowseTagConfigurationFile = new Button(container, SWT.PUSH);
 		fd_tfTagConfigurationFilePath.right = new FormAttachment(
 				btnBrowseTagConfigurationFile, -6);
 		FormData fd_btnBrowseTagConfigurationFile = new FormData();
@@ -351,7 +330,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_btnBrowseTagConfigurationFile);
 		btnBrowseTagConfigurationFile.setText("...");
 
-		chkEnablePolygonClipping = new Button(advancedOptions, SWT.CHECK);
+		chkEnablePolygonClipping = new Button(container, SWT.CHECK);
 		FormData fd_chkEnablePolygonClipping = new FormData();
 		fd_chkEnablePolygonClipping.top = new FormAttachment(
 				chkEnableUseCustomTagConfig, 6);
@@ -360,7 +339,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("use polygon clipping to reduce map file size (minimal performance overhead)");
 		chkEnablePolygonClipping.setSelection(true);
 
-		chkEnableWayClipping = new Button(advancedOptions, SWT.CHECK);
+		chkEnableWayClipping = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableWayClipping = new FormData();
 		fd_chkEnableWayClipping.top = new FormAttachment(
 				chkEnablePolygonClipping, 6);
@@ -369,7 +348,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Use way clipping to reduce map file size (minimal performance overhead)");
 		chkEnableWayClipping.setSelection(true);
 
-		chkComputeLabelPositions = new Button(advancedOptions, SWT.CHECK);
+		chkComputeLabelPositions = new Button(container, SWT.CHECK);
 		FormData fd_chkComputeLabelPositions = new FormData();
 		chkComputeLabelPositions.setLayoutData(fd_chkComputeLabelPositions);
 		fd_chkComputeLabelPositions.top = new FormAttachment(
@@ -378,7 +357,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Compute label position for polygons that cover multiple tiles (minimal performance overhead)");
 		chkComputeLabelPositions.setSelection(true);
 
-		chkEnableDebugFile = new Button(advancedOptions, SWT.CHECK);
+		chkEnableDebugFile = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableDebugFile = new FormData();
 		fd_chkEnableDebugFile.top = new FormAttachment(
 				chkComputeLabelPositions, 6);
@@ -388,14 +367,14 @@ public class MapFileWizardPage extends WizardPage {
 		chkEnableCustomMapStartZoom.setSelection(false);
 
 		// SIMPLIFICATION FACTOR
-		Label lblSimplificationFactor = new Label(advancedOptions, SWT.NONE);
+		Label lblSimplificationFactor = new Label(container, SWT.NONE);
 		FormData fd_lblSimplificationFactor = new FormData();
 		fd_lblSimplificationFactor.top = new FormAttachment(chkEnableDebugFile,
 				6);
 		lblSimplificationFactor.setLayoutData(fd_lblSimplificationFactor);
 		lblSimplificationFactor.setText("Simplification factor: ");
 
-		inpSimplificationFactor = new Spinner(advancedOptions, SWT.NONE);
+		inpSimplificationFactor = new Spinner(container, SWT.NONE);
 		FormData fd_inpSimplificationFactor = new FormData();
 		fd_inpSimplificationFactor.bottom = new FormAttachment(
 				lblSimplificationFactor, 0, SWT.CENTER);
@@ -408,13 +387,13 @@ public class MapFileWizardPage extends WizardPage {
 		// inpSimplificationFactor.setMinimum(0);
 
 		// BOUNDING BOX ENLARGEMENT
-		Label lblBBEnlargement = new Label(advancedOptions, SWT.NONE);
+		Label lblBBEnlargement = new Label(container, SWT.NONE);
 		FormData fd_lblBBEnlargement = new FormData();
 		fd_lblBBEnlargement.top = new FormAttachment(lblSimplificationFactor, 6);
 		lblBBEnlargement.setLayoutData(fd_lblBBEnlargement);
 		lblBBEnlargement.setText("Bounding box enlargement in px:");
 
-		inpBBEnlargement = new Spinner(advancedOptions, SWT.NONE);
+		inpBBEnlargement = new Spinner(container, SWT.NONE);
 		FormData fd_inpBBEnlargement = new FormData();
 		fd_inpBBEnlargement.top = new FormAttachment(lblSimplificationFactor, 6);
 		fd_inpBBEnlargement.left = new FormAttachment(
@@ -427,13 +406,13 @@ public class MapFileWizardPage extends WizardPage {
 		inpBBEnlargement.setSelection(20);
 
 		// ZOOM INTERVAL CONFIGURATION
-		Label lblZoomIntervalConfig = new Label(advancedOptions, SWT.NONE);
+		Label lblZoomIntervalConfig = new Label(container, SWT.NONE);
 		FormData fd_lblZoomIntervalConfig = new FormData();
 		fd_lblZoomIntervalConfig.top = new FormAttachment(lblBBEnlargement, 6);
 		lblZoomIntervalConfig.setLayoutData(fd_lblZoomIntervalConfig);
 		lblZoomIntervalConfig.setText("Zoom interval configuration:");
 
-		Button btnAddZoomInterval = new Button(advancedOptions, SWT.PUSH);
+		Button btnAddZoomInterval = new Button(container, SWT.PUSH);
 		FormData fd_btnAddZoomInterval = new FormData();
 		fd_btnAddZoomInterval.top = new FormAttachment(lblZoomIntervalConfig, 6);
 		btnAddZoomInterval.setLayoutData(fd_btnAddZoomInterval);
@@ -441,7 +420,7 @@ public class MapFileWizardPage extends WizardPage {
 				"list-add.png"));
 		btnAddZoomInterval.setToolTipText("Add a zoom interval");
 
-		Button btnRemoveZoomInterval = new Button(advancedOptions, SWT.PUSH);
+		Button btnRemoveZoomInterval = new Button(container, SWT.PUSH);
 		FormData fd_btnRemoveZoomInterval = new FormData();
 		fd_btnRemoveZoomInterval.bottom = new FormAttachment(
 				btnAddZoomInterval, 0, SWT.BOTTOM);
@@ -451,7 +430,7 @@ public class MapFileWizardPage extends WizardPage {
 		btnRemoveZoomInterval.setImage(new Image(Display.getCurrent(),
 				"list-remove.png"));
 
-		inpZoomIntervalConfiguration = new Table(advancedOptions, SWT.MULTI
+		inpZoomIntervalConfiguration = new Table(container, SWT.MULTI
 				| SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
 		FormData fd_inpZoomIntervalConfiguration = new FormData(SWT.DEFAULT, 80);
 		fd_inpZoomIntervalConfiguration.top = new FormAttachment(
@@ -462,16 +441,13 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_inpZoomIntervalConfiguration);
 		initializeZoomIntervalTable();
 
-		// // RESTORE DEFAULT SETTINGS
-		// Button btnDefaultSettings = new Button(container, SWT.PUSH);
-		// FormData fd_btnDefaultSettings = new FormData();
-		// fd_btnDefaultSettings.top = new FormAttachment(advancedOptions, 6);
-		// btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
-		// btnDefaultSettings.setText("Restore default settings");
+		 // RESTORE DEFAULT SETTINGS
+		 Button btnDefaultSettings = new Button(container, SWT.PUSH);
+		 FormData fd_btnDefaultSettings = new FormData();
+		 fd_btnDefaultSettings.top = new FormAttachment(inpZoomIntervalConfiguration, 6);
+		 btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
+		 btnDefaultSettings.setText("Restore default settings");
 
-		// Set correct height
-		expandItem.setHeight(advancedOptions.computeSize(SWT.DEFAULT,
-				SWT.DEFAULT).y);
 
 		// SCROLLBARS
 		// Allow container's content to be scrolled by defining container as
@@ -483,18 +459,11 @@ public class MapFileWizardPage extends WizardPage {
 		// Calculate size
 		// container.pack();
 		scrolledComposite.pack();
-		advancedOptions.pack();
-		bar.pack();
-		System.out.println("Bar size: " + bar.getSize());
-		System.out.println("Advanced content size: "
-				+ advancedOptions.getSize());
 		// scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT,
 		// SWT.DEFAULT).x, container.computeSize(SWT.DEFAULT, SWT.DEFAULT).y +
 		// advancedOptions.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		scrolledComposite.setMinSize(
-				container.computeSize(SWT.DEFAULT, SWT.DEFAULT).x,
-				1000);
-
+				container.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, container.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		// EVENT LISTENERS
 		addEventListeners();
 		setValuesFromSettings();
@@ -699,7 +668,7 @@ public class MapFileWizardPage extends WizardPage {
 			section.put("", this.inpBBMinLat.getSelection());
 			section.put("", this.inpBBMaxLat.getSelection());
 			section.put("", this.inpBBMinLon.getSelection());
-			section.put("", this.inpBBMinLon.getSelection());
+			section.put("", this.inpBBMaxLon.getSelection());
 		}
 
 		// Preferred language

@@ -5,7 +5,10 @@
 	<groupId>org.mapsforge</groupId>
 	<artifactId>mapmaker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <modules>
+        <module>untitled</module>
+    </modules>
+    <packaging>pom</packaging>
 
 	<name>mapmaker</name>
 	<url>http://mapsforge.org</url>

@@ -28,18 +28,23 @@ public class MainWizard extends Wizard {
 		}
 
 		setDialogSettings(settings);
-//		IWizardPage generalOptionsPage = new OptionSelectionWizardPage(
-//				"General Settings", settings);
-//		addPage(generalOptionsPage);
+		
+		// Add wizard pages
+		IWizardPage generalOptionsPage = new OptionSelectionWizardPage(
+				"General Settings", settings);
+		addPage(generalOptionsPage);
 
 		IWizardPage mapFileOptionsPage = new MapFileWizardPage(
 				MapFileWizardPage.getStaticTitle(), settings);
 		addPage(mapFileOptionsPage);
 
-//		IWizardPage poiOptionsPage = new POIWizardPage(POIWizardPage.getStaticTitle(), settings);
-//		addPage(poiOptionsPage);
+		IWizardPage poiOptionsPage = new POIWizardPage(POIWizardPage.getStaticTitle(), settings);
+		addPage(poiOptionsPage);
 		
+		// Create dynamic wizard page configuration
 		WizardPageManager.getInstance().initialize(this);
+		
+		System.out.println("Container == null ? " + (this.getContainer() == null));
 	}
 
 	public static String getSettingsSectionName() {
