@@ -44,7 +44,6 @@ public class MainWizard extends Wizard {
 		// Create dynamic wizard page configuration
 		WizardPageManager.getInstance().initialize(this);
 		
-		System.out.println("Container == null ? " + (this.getContainer() == null));
 	}
 
 	public static String getSettingsSectionName() {

@@ -194,7 +194,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 			setErrorMessage(null);
 			updateSettings();
 		}
-		
+
 		updateWizardPageConfiguration();
 		setPageComplete(isValid);
 	}
@@ -211,20 +211,20 @@ public class OptionSelectionWizardPage extends WizardPage {
 
 	private void updateWizardPageConfiguration() {
 		WizardPageManager.getInstance().setWizardPageEnabled(
-				MapFileWizardPage.getStaticTitle(), this.ckboxCreateVectorMap.getSelection());
+				MapFileWizardPage.getStaticTitle(),
+				this.ckboxCreateVectorMap.getSelection());
 
 		WizardPageManager.getInstance().setWizardPageEnabled(
-				POIWizardPage.getStaticTitle(), this.ckboxCreatePOIs.getSelection());
-		
-		if(this.ckboxCreateVectorMap.getSelection()) {
+				POIWizardPage.getStaticTitle(),
+				this.ckboxCreatePOIs.getSelection());
+
+		if (this.ckboxCreateVectorMap.getSelection()) {
 			System.out.println("[X] Create vector map");
 		}
-		if(this.ckboxCreatePOIs.getSelection()) {
+		if (this.ckboxCreatePOIs.getSelection()) {
 			System.out.println("[X] Create POIs");
 		}
-		
-		
-		
+
 		System.out.println("Config: " + WizardPageManager.getInstance());
 	}
 

@@ -41,7 +41,7 @@ public class POIWizardPage extends WizardPage {
 	public static String getSettingsSectionName() {
 		return SETTINGS_SECTION_NAME;
 	}
-	
+
 	static String getStaticTitle() {
 		return TITLE;
 	}
@@ -184,6 +184,7 @@ public class POIWizardPage extends WizardPage {
 		// Output file may not be empty
 		if (this.tfOutputFilePath.getText().equals("")) {
 			super.setErrorMessage("No output file has been specified.");
+			isValid = false;
 		}
 
 		// Category config file must exist be a file and be writable
@@ -210,12 +211,11 @@ public class POIWizardPage extends WizardPage {
 
 		return isValid;
 	}
-	
+
 	@Override
 	public IWizardPage getNextPage() {
-		System.out.println("Get next page: " + super.getNextPage());
-		return null;
-		
+		return WizardPageManager.getInstance().getNextWizardPage(this);
+
 	}
 
 }

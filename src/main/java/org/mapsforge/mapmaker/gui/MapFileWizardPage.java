@@ -14,10 +14,13 @@
  */
 package org.mapsforge.mapmaker.gui;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -31,8 +34,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -50,6 +53,11 @@ public class MapFileWizardPage extends WizardPage {
 	private final static String TITLE = "Mapfile Settings";
 	private Table inpZoomIntervalConfiguration;
 	private SelectionListener checkBoxSelectionListener;
+	private ModifyListener textFieldModificationListener;
+	/** Country codes as defined in ISO_3166-1 (See: {@link http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2}). */
+	// TODO use hashes
+	private final static Collection<String> ACCEPTED_LANGUAGES = Arrays.asList(Locale.getISOCountries());
+
 	// Inputs
 	private Text tfOutputFilePath;
 	private Button btnBrowseMapFile;
@@ -74,6 +82,8 @@ public class MapFileWizardPage extends WizardPage {
 	private Spinner inpBBMinLon;
 	private Spinner inpBBMaxLon;
 	private Button chkEnableCustomBoundingBox;
+	private Group grpBoundingBox;
+	private Group grpMapStartPositions;
 
 	protected MapFileWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
@@ -96,6 +106,16 @@ public class MapFileWizardPage extends WizardPage {
 			public void widgetDefaultSelected(SelectionEvent e) {
 				widgetSelected(e);
 
+			}
+		};
+		
+		this.textFieldModificationListener = new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				System.out.println("Text field changed: " + e.getSource());
+				MapFileWizardPage.this.onInputChanged();
+				
 			}
 		};
 	}
@@ -148,7 +168,7 @@ public class MapFileWizardPage extends WizardPage {
 		chkEnableHDDCache
 				.setText("Cache tiles to HDD (slower but required for bigger map files)");
 
-		chkEnableCustomStartPosition = new Button(container, SWT.CHECK);
+		this.chkEnableCustomStartPosition = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableCustomStartPosition = new FormData();
 		fd_chkEnableCustomStartPosition.top = new FormAttachment(
 				chkEnableHDDCache, 6);
@@ -156,8 +176,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_chkEnableCustomStartPosition);
 		chkEnableCustomStartPosition.setText("Use custom start position");
 
-		// MAP START POSITION GROUP
-		Group grpMapStartPositions = new Group(container, SWT.NONE);
+		grpMapStartPositions = new Group(container, SWT.NONE);
 		FormData fd_grpMapStartPositions = new FormData();
 		fd_grpMapStartPositions.top = new FormAttachment(
 				chkEnableCustomStartPosition, 6);
@@ -201,8 +220,7 @@ public class MapFileWizardPage extends WizardPage {
 		chkEnableCustomBoundingBox.setLayoutData(fd_chkEnableCustomBoundingBox);
 		chkEnableCustomBoundingBox.setText("Use custom bounding box: ");
 
-		// BOUNDING BOX GROUP
-		Group grpBoundingBox = new Group(container, SWT.NONE);
+		grpBoundingBox = new Group(container, SWT.NONE);
 		FormData fd_grpBoundingBox = new FormData();
 		fd_grpBoundingBox.top = new FormAttachment(chkEnableCustomBoundingBox,
 				6);
@@ -441,13 +459,13 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_inpZoomIntervalConfiguration);
 		initializeZoomIntervalTable();
 
-		 // RESTORE DEFAULT SETTINGS
-		 Button btnDefaultSettings = new Button(container, SWT.PUSH);
-		 FormData fd_btnDefaultSettings = new FormData();
-		 fd_btnDefaultSettings.top = new FormAttachment(inpZoomIntervalConfiguration, 6);
-		 btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
-		 btnDefaultSettings.setText("Restore default settings");
-
+		// RESTORE DEFAULT SETTINGS
+		Button btnDefaultSettings = new Button(container, SWT.PUSH);
+		FormData fd_btnDefaultSettings = new FormData();
+		fd_btnDefaultSettings.top = new FormAttachment(
+				inpZoomIntervalConfiguration, 6);
+		btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
+		btnDefaultSettings.setText("Restore default settings");
 
 		// SCROLLBARS
 		// Allow container's content to be scrolled by defining container as
@@ -463,7 +481,8 @@ public class MapFileWizardPage extends WizardPage {
 		// SWT.DEFAULT).x, container.computeSize(SWT.DEFAULT, SWT.DEFAULT).y +
 		// advancedOptions.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		scrolledComposite.setMinSize(
-				container.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, container.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+				container.computeSize(SWT.DEFAULT, SWT.DEFAULT).x,
+				container.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		// EVENT LISTENERS
 		addEventListeners();
 		setValuesFromSettings();
@@ -477,14 +496,7 @@ public class MapFileWizardPage extends WizardPage {
 	 */
 	private void addEventListeners() {
 		// MAP FILE PATH
-		this.tfOutputFilePath.addModifyListener(new ModifyListener() {
-
-			@Override
-			public void modifyText(ModifyEvent e) {
-
-				MapFileWizardPage.this.onInputChanged();
-			}
-		});
+		this.tfOutputFilePath.addModifyListener(this.textFieldModificationListener);
 
 		// Save as button
 		this.btnBrowseMapFile.addSelectionListener(new SelectionListener() {
@@ -530,6 +542,19 @@ public class MapFileWizardPage extends WizardPage {
 				.addSelectionListener(this.checkBoxSelectionListener);
 		this.chkEnableDebugFile
 				.addSelectionListener(this.checkBoxSelectionListener);
+		
+		// Map start latitude / longitude
+		this.tfMapStartLat.addModifyListener(this.textFieldModificationListener);
+		this.tfMapStartLon.addModifyListener(this.textFieldModificationListener);
+		
+		// Bounding box
+//		this.inpBBMinLat.addModifyListener(this.textFieldModificationListener);
+//		this.inpBBMaxLat.addModifyListener(this.textFieldModificationListener);
+//		this.inpBBMinLon.addModifyListener(this.textFieldModificationListener);
+//		this.inpBBMaxLon.addModifyListener(this.textFieldModificationListener);
+		
+		// Preferred language
+		this.tfPreferredLanguage.addModifyListener(this.textFieldModificationListener);
 	}
 
 	protected void setFilePath(String text, Text widget) {
@@ -569,16 +594,6 @@ public class MapFileWizardPage extends WizardPage {
 		onInputChanged();
 	}
 
-	private void populateLanguageDropDownMenu(Combo inpPreferredLang) {
-		// See: http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-		String[] countryCodes = Locale.getISOCountries();
-		inpPreferredLang.add("(none)");
-		for (String code : countryCodes) {
-			inpPreferredLang.add(code);
-		}
-
-	}
-
 	private void initializeZoomIntervalTable() {
 		this.inpZoomIntervalConfiguration.setLinesVisible(true);
 		this.inpZoomIntervalConfiguration.setHeaderVisible(true);
@@ -616,10 +631,14 @@ public class MapFileWizardPage extends WizardPage {
 	 */
 	private void enableOrDisableControls() {
 		// Custom start position
-		this.tfMapStartLat.setEnabled(this.chkEnableCustomStartPosition
-				.getSelection());
-		this.tfMapStartLon.setEnabled(this.chkEnableCustomStartPosition
-				.getSelection());
+		for (Control c : this.grpMapStartPositions.getChildren()) {
+			c.setEnabled(this.chkEnableCustomStartPosition.getSelection());
+		}
+
+		// Custom bounding box
+		for (Control c : this.grpBoundingBox.getChildren()) {
+			c.setEnabled(this.chkEnableCustomBoundingBox.getSelection());
+		}
 
 		// Custom zoom level
 		this.inpMapStartZoom.setEnabled(this.chkEnableCustomMapStartZoom
@@ -665,6 +684,7 @@ public class MapFileWizardPage extends WizardPage {
 		if (section.getBoolean("enableCustomBB")) {
 			section.put("enableCustomBB",
 					this.chkEnableCustomBoundingBox.getSelection());
+			// TODO assing keys
 			section.put("", this.inpBBMinLat.getSelection());
 			section.put("", this.inpBBMaxLat.getSelection());
 			section.put("", this.inpBBMinLon.getSelection());
@@ -709,6 +729,24 @@ public class MapFileWizardPage extends WizardPage {
 	public boolean isPageComplete() {
 		boolean isValid = true;
 
+		// Output file may not be empty
+		if (this.tfOutputFilePath.getText().equals("")) {
+			super.setErrorMessage("No output file has been specified.");
+			isValid = false;
+		}
+		
+		// Preferred language must be empty or valid
+		if(!this.tfPreferredLanguage.getText().equalsIgnoreCase("") && !ACCEPTED_LANGUAGES.contains(this.tfPreferredLanguage.getText())) {
+			super.setErrorMessage("The provided language is not valid.");
+			isValid = false;
+		}
+
 		return isValid;
+	}
+
+	@Override
+	public IWizardPage getNextPage() {
+		return WizardPageManager.getInstance().getNextWizardPage(this);
+
 	}
 }

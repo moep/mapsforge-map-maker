@@ -36,8 +36,6 @@ class WizardPageManager {
 	}
 
 	IWizardPage getNextWizardPage(IWizardPage currentWizardPage) {
-		System.out.println("-----------");
-
 		IWizardPage nextPage = null;
 
 		// Determine the page's position
