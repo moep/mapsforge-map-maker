@@ -155,7 +155,7 @@ public class TaskConfigurationBuilderTest {
 
 	/** Build a custom configuration for POIs */
 	private IDialogSettings generatePOISettings() {
-		String rootSectionName = MainWizard.SETTINGS_SECTION_NAME;
+		String rootSectionName = MainWizard.SETTINGS_ROOT_SECTION_NAME;
 		String generalSectionName = OptionSelectionWizardPage
 				.getSettingsSectionName();
 		String poiSectionName = POIWizardPage.getSettingsSectionName();
@@ -178,7 +178,7 @@ public class TaskConfigurationBuilderTest {
 	}
 
 	private IDialogSettings generateMFWSettings() {
-		String rootSectionName = MainWizard.SETTINGS_SECTION_NAME;
+		String rootSectionName = MainWizard.SETTINGS_ROOT_SECTION_NAME;
 		String generalSectionName = OptionSelectionWizardPage
 				.getSettingsSectionName();
 		String mwfSectionName = MapFileWizardPage.getSettingsSectionName();

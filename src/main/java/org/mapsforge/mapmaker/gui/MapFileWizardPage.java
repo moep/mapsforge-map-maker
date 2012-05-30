@@ -28,6 +28,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -54,11 +56,20 @@ public class MapFileWizardPage extends WizardPage {
 	private Table inpZoomIntervalConfiguration;
 	private SelectionListener checkBoxSelectionListener;
 	private ModifyListener textFieldModificationListener;
-	/** Country codes as defined in ISO_3166-1 (See: {@link http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2}). */
+	/**
+	 * Country codes as defined in ISO_3166-1 (See: {@link http
+	 * ://en.wikipedia.org/wiki/ISO_3166-1_alpha-2}).
+	 */
 	// TODO use hashes
-	private final static Collection<String> ACCEPTED_LANGUAGES = Arrays.asList(Locale.getISOCountries());
+	private final static Collection<String> ACCEPTED_LANGUAGES = Arrays
+			.asList(Locale.getISOCountries());
+
+	// Colors and images for input highlighting
+	private final Color errorBgColor;
+	private final Color okBgColor;
 
 	// Inputs
+	private Label lblOutputFilePath;
 	private Text tfOutputFilePath;
 	private Button btnBrowseMapFile;
 	private Button chkEnableHDDCache;
@@ -77,10 +88,10 @@ public class MapFileWizardPage extends WizardPage {
 	private Text tfTagConfigurationFilePath;
 	private Spinner inpSimplificationFactor;
 	private Spinner inpBBEnlargement;
-	private Spinner inpBBMinLat;
-	private Spinner inpBBMaxLat;
-	private Spinner inpBBMinLon;
-	private Spinner inpBBMaxLon;
+	private Text tfBBMinLat;
+	private Text tfBBMaxLat;
+	private Text tfBBMinLon;
+	private Text tfBBMaxLon;
 	private Button chkEnableCustomBoundingBox;
 	private Group grpBoundingBox;
 	private Group grpMapStartPositions;
@@ -98,7 +109,6 @@ public class MapFileWizardPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				System.out.println("Checkbox changed: " + e.getSource());
 				MapFileWizardPage.this.onInputChanged();
 			}
 
@@ -108,16 +118,17 @@ public class MapFileWizardPage extends WizardPage {
 
 			}
 		};
-		
+
 		this.textFieldModificationListener = new ModifyListener() {
-			
+
 			@Override
 			public void modifyText(ModifyEvent e) {
-				System.out.println("Text field changed: " + e.getSource());
 				MapFileWizardPage.this.onInputChanged();
-				
 			}
 		};
+
+		this.errorBgColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+		this.okBgColor = Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
 	}
 
 	public static String getSettingsSectionName() {
@@ -138,17 +149,16 @@ public class MapFileWizardPage extends WizardPage {
 		final Composite container = new Composite(scrolledComposite, SWT.NONE);
 		container.setLayout(new FormLayout());
 
-		// LABEL
-		Label lblMapFilePath = new Label(container, SWT.NONE);
-		FormData fd_lblMapFilePath = new FormData();
-		fd_lblMapFilePath.top = new FormAttachment(0);
-		fd_lblMapFilePath.left = new FormAttachment(0);
-		lblMapFilePath.setLayoutData(fd_lblMapFilePath);
-		lblMapFilePath.setText("Save as...");
+		lblOutputFilePath = new Label(container, SWT.NONE);
+		FormData fd_lblOutputFilePath = new FormData();
+		fd_lblOutputFilePath.top = new FormAttachment(0);
+		fd_lblOutputFilePath.left = new FormAttachment(0);
+		lblOutputFilePath.setLayoutData(fd_lblOutputFilePath);
+		lblOutputFilePath.setText("Save as...");
 
 		tfOutputFilePath = new Text(container, SWT.BORDER);
 		FormData fd_tfOutputFilePath = new FormData();
-		fd_tfOutputFilePath.top = new FormAttachment(lblMapFilePath, 6);
+		fd_tfOutputFilePath.top = new FormAttachment(lblOutputFilePath, 6);
 		fd_tfOutputFilePath.left = new FormAttachment(0, 0);
 		tfOutputFilePath.setLayoutData(fd_tfOutputFilePath);
 
@@ -213,6 +223,7 @@ public class MapFileWizardPage extends WizardPage {
 		fd_tfMapStartLon.left = new FormAttachment(lblMapStartLon, 6);
 		tfMapStartLon.setLayoutData(fd_tfMapStartLon);
 
+		// BOUNDING BOX
 		chkEnableCustomBoundingBox = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableCustomBoundingBox = new FormData();
 		fd_chkEnableCustomBoundingBox.top = new FormAttachment(
@@ -228,30 +239,32 @@ public class MapFileWizardPage extends WizardPage {
 		fd_grpBoundingBox.right = new FormAttachment(100);
 		grpBoundingBox.setLayoutData(fd_grpBoundingBox);
 		grpBoundingBox.setLayout(new GridLayout(4, false));
-		grpBoundingBox.setEnabled(false);
 
 		// Labels and inputs
 		// Latitude
 		Label lblBBMinMaxLat = new Label(grpBoundingBox, SWT.NONE);
 		lblBBMinMaxLat.setText("Min / Max Latitude:");
 
-		inpBBMinLat = new Spinner(grpBoundingBox, SWT.NONE);
+		tfBBMinLat = new Text(grpBoundingBox, SWT.NONE);
+		// inpBBMinLat.setMinimum(-90000000);
+		// inpBBMinLat.setMaximum(90000000);
+		// inpBBMinLat.setDigits(6);
 
 		Label lblBBMinMaxLatDivider = new Label(grpBoundingBox, SWT.NONE);
 		lblBBMinMaxLatDivider.setText("/");
 
-		inpBBMaxLat = new Spinner(grpBoundingBox, SWT.NONE);
+		tfBBMaxLat = new Text(grpBoundingBox, SWT.NONE);
 
 		// Longitude
 		Label lblBBMinMaxLon = new Label(grpBoundingBox, SWT.NONE);
 		lblBBMinMaxLon.setText("Min / Max Longitude:");
 
-		inpBBMinLon = new Spinner(grpBoundingBox, SWT.NONE);
+		tfBBMinLon = new Text(grpBoundingBox, SWT.NONE);
 
 		Label lblBBMinMaxLonDivider = new Label(grpBoundingBox, SWT.NONE);
 		lblBBMinMaxLonDivider.setText("/");
 
-		inpBBMaxLon = new Spinner(grpBoundingBox, SWT.NONE);
+		tfBBMaxLon = new Text(grpBoundingBox, SWT.NONE);
 
 		// CUSTOM ZOOM
 		chkEnableCustomMapStartZoom = new Button(container, SWT.CHECK);
@@ -487,6 +500,7 @@ public class MapFileWizardPage extends WizardPage {
 		addEventListeners();
 		setValuesFromSettings();
 		onInputChanged();
+		System.out.println("Controls have been created");
 
 	}
 
@@ -496,7 +510,8 @@ public class MapFileWizardPage extends WizardPage {
 	 */
 	private void addEventListeners() {
 		// MAP FILE PATH
-		this.tfOutputFilePath.addModifyListener(this.textFieldModificationListener);
+		this.tfOutputFilePath
+				.addModifyListener(this.textFieldModificationListener);
 
 		// Save as button
 		this.btnBrowseMapFile.addSelectionListener(new SelectionListener() {
@@ -542,19 +557,22 @@ public class MapFileWizardPage extends WizardPage {
 				.addSelectionListener(this.checkBoxSelectionListener);
 		this.chkEnableDebugFile
 				.addSelectionListener(this.checkBoxSelectionListener);
-		
+
 		// Map start latitude / longitude
-		this.tfMapStartLat.addModifyListener(this.textFieldModificationListener);
-		this.tfMapStartLon.addModifyListener(this.textFieldModificationListener);
-		
+		this.tfMapStartLat
+				.addModifyListener(this.textFieldModificationListener);
+		this.tfMapStartLon
+				.addModifyListener(this.textFieldModificationListener);
+
 		// Bounding box
-//		this.inpBBMinLat.addModifyListener(this.textFieldModificationListener);
-//		this.inpBBMaxLat.addModifyListener(this.textFieldModificationListener);
-//		this.inpBBMinLon.addModifyListener(this.textFieldModificationListener);
-//		this.inpBBMaxLon.addModifyListener(this.textFieldModificationListener);
-		
+		this.tfBBMinLat.addModifyListener(this.textFieldModificationListener);
+		this.tfBBMaxLat.addModifyListener(this.textFieldModificationListener);
+		this.tfBBMinLon.addModifyListener(this.textFieldModificationListener);
+		this.tfBBMaxLon.addModifyListener(this.textFieldModificationListener);
+
 		// Preferred language
-		this.tfPreferredLanguage.addModifyListener(this.textFieldModificationListener);
+		this.tfPreferredLanguage
+				.addModifyListener(this.textFieldModificationListener);
 	}
 
 	protected void setFilePath(String text, Text widget) {
@@ -567,7 +585,7 @@ public class MapFileWizardPage extends WizardPage {
 	 * values accordingly.
 	 */
 	private void setValuesFromSettings() {
-		System.out.println("[WizardPage] Applying setting values");
+		System.out.println("[WizardPage] (MapFile) Applying setting values");
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
 
@@ -684,11 +702,10 @@ public class MapFileWizardPage extends WizardPage {
 		if (section.getBoolean("enableCustomBB")) {
 			section.put("enableCustomBB",
 					this.chkEnableCustomBoundingBox.getSelection());
-			// TODO assing keys
-			section.put("", this.inpBBMinLat.getSelection());
-			section.put("", this.inpBBMaxLat.getSelection());
-			section.put("", this.inpBBMinLon.getSelection());
-			section.put("", this.inpBBMaxLon.getSelection());
+			section.put("BBMinLat", this.tfBBMinLat.getText());
+			section.put("BBMaxLat", this.tfBBMaxLat.getText());
+			section.put("BBMinLon", this.tfBBMinLon.getText());
+			section.put("BBMaxLon", this.tfBBMaxLon.getText());
 		}
 
 		// Preferred language
@@ -731,12 +748,124 @@ public class MapFileWizardPage extends WizardPage {
 
 		// Output file may not be empty
 		if (this.tfOutputFilePath.getText().equals("")) {
-			super.setErrorMessage("No output file has been specified.");
+			setComponentInValid(this.tfOutputFilePath,
+					"No output file has been specified.");
 			isValid = false;
+		} else {
+			setComponentValid(this.tfOutputFilePath);
 		}
-		
+
+		// Custom start position
+		if (this.chkEnableCustomStartPosition.getSelection()) {
+			String mapStartLatTxt = this.tfMapStartLat.getText();
+			String mapStartLonTxt = this.tfMapStartLon.getText();
+
+			double mapStartLat = 0;
+			try {
+				mapStartLat = Double.parseDouble(mapStartLatTxt);
+				setComponentValid(this.tfMapStartLat);
+				if (mapStartLat < -90 || mapStartLat > 90) {
+					System.out.println("setting invalid");
+					setComponentInValid(this.tfMapStartLat,
+							"Latitude must been between -90° and +90°.");
+				} else {
+					setComponentValid(this.tfMapStartLat);
+				}
+
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfMapStartLat,
+						"Latitude may not be empty and must be a number.");
+			}
+
+			double mapStartLon = 0;
+			try {
+				mapStartLon = Double.parseDouble(mapStartLonTxt);
+				setComponentValid(this.tfMapStartLon);
+				if (mapStartLon < -180 || mapStartLon > 180) {
+					System.out.println("setting invalid");
+					setComponentInValid(this.tfMapStartLon,
+							"Longitude must be between -180° and +180°.");
+				} else {
+					setComponentValid(this.tfMapStartLon);
+				}
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfMapStartLon,
+						"Longitude may not be empty and must be a number.");
+			}
+		}
+
+		// Custom bounding box
+		if (this.chkEnableCustomBoundingBox.getSelection()) {
+			String minLatTxt = this.tfBBMinLat.getText();
+			String maxLatTxt = this.tfBBMaxLat.getText();
+			String minLonTxt = this.tfBBMinLon.getText();
+			String maxLonTxt = this.tfBBMaxLon.getText();
+
+			double minLat = -91;
+			try {
+				minLat = Double.parseDouble(minLatTxt);
+				setComponentValid(this.tfBBMinLat);
+				if (minLat < -90 || minLat > 90) {
+					setComponentInValid(this.tfBBMinLat,
+							"Min. latitude must be between -90° and +90°");
+				}
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfBBMinLat,
+						"Min. latitude may not be empty and must be a number.");
+			}
+
+			double minLon = -181;
+			try {
+				minLon = Double.parseDouble(minLonTxt);
+				setComponentValid(this.tfBBMinLon);
+				if (minLon < -180 || minLon > 180) {
+					setComponentInValid(this.tfBBMinLon,
+							"Min. longitude must be between -180° and +180°");
+				}
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfBBMinLon,
+						"Min. longitude may not be empty and must be a number.");
+			}
+
+			double maxLat = 91;
+			try {
+				maxLat = Double.parseDouble(maxLatTxt);
+				setComponentValid(this.tfBBMaxLat);
+				if (maxLat < -90 || maxLat > 90) {
+					setComponentInValid(this.tfBBMaxLat,
+							"Max. latitude must be between -90° and +90°");
+				}
+				if(maxLat <= minLat) {
+					setComponentInValid(this.tfBBMaxLat,
+							"Max. latitude must be greater than min. latitude.");
+				}
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfBBMaxLat,
+						"Max. latitude may not be empty and must be a number.");
+			}
+			
+			double maxLon = 181;
+			try {
+				maxLon = Double.parseDouble(maxLonTxt);
+				setComponentValid(this.tfBBMaxLon);
+				if (maxLon < -180 || maxLon > 180) {
+					setComponentInValid(this.tfBBMaxLon,
+							"Max. longitude must be between -180° and +180°");
+				}
+				if(maxLon <= minLon) {
+					setComponentInValid(this.tfBBMaxLon,
+							"Max. longitude must be greater than min. longitude.");
+				}
+			} catch (NumberFormatException e) {
+				setComponentInValid(this.tfBBMaxLon,
+						"Max. longitude may not be empty and must be a number.");
+			}
+		}
+
 		// Preferred language must be empty or valid
-		if(!this.tfPreferredLanguage.getText().equalsIgnoreCase("") && !ACCEPTED_LANGUAGES.contains(this.tfPreferredLanguage.getText())) {
+		if (!this.tfPreferredLanguage.getText().equalsIgnoreCase("")
+				&& !ACCEPTED_LANGUAGES.contains(this.tfPreferredLanguage
+						.getText().toUpperCase())) {
 			super.setErrorMessage("The provided language is not valid.");
 			isValid = false;
 		}
@@ -744,9 +873,25 @@ public class MapFileWizardPage extends WizardPage {
 		return isValid;
 	}
 
+	private void setComponentInValid(Control c, String errorText) {
+		c.setBackground(this.errorBgColor);
+		super.setErrorMessage(errorText);
+	}
+
+	private void setComponentValid(Control c) {
+		c.setBackground(this.okBgColor);
+	}
+
 	@Override
 	public IWizardPage getNextPage() {
 		return WizardPageManager.getInstance().getNextWizardPage(this);
 
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		// Uncomment this in case a non-system colors are used
+		// this.errorBgColor.dispose();
 	}
 }

@@ -37,7 +37,7 @@ public class GUIOsmosisLauncher {
 				ProgressGUI gui = ProgressGUI.getInstance();
 				try {
 					System.out.println("[Main] Saving settings");
-					w.getDialogSettings().save("lastSession.settings");
+					w.getDialogSettings().save("lastSession.settings.xml");
 				} catch (IOException e) {
 					// TODO Error message dialog
 					e.printStackTrace();

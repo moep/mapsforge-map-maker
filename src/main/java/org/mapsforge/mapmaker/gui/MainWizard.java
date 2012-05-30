@@ -13,13 +13,14 @@ public class MainWizard extends Wizard {
 	 * {@link ExceptionInInitializerError} for this class'
 	 * {@link #getSettingsSectionName()} method called by JUnit..
 	 */
-	public static final String SETTINGS_SECTION_NAME = "osmosis parameters";
+	public static final String SETTINGS_ROOT_SECTION_NAME = "osmosis parameters";
+	private static final String SETTINGS_FILE = "lastSession.settings.xml";
 
 	public MainWizard() {
 		setWindowTitle("Mapsforge Map Creation Wizard");
-		IDialogSettings settings = new DialogSettings(SETTINGS_SECTION_NAME);
+		IDialogSettings settings = new DialogSettings(SETTINGS_ROOT_SECTION_NAME);
 		try {
-			settings.load("lastSession.settings");
+			settings.load(SETTINGS_FILE);
 			System.out
 					.println("[Wizard] Last used settings have been loaded from file.");
 		} catch (IOException e) {
@@ -43,23 +44,30 @@ public class MainWizard extends Wizard {
 		
 		// Create dynamic wizard page configuration
 		WizardPageManager.getInstance().initialize(this);
-		
 	}
 
 	public static String getSettingsSectionName() {
-		return SETTINGS_SECTION_NAME;
+		return SETTINGS_ROOT_SECTION_NAME;
 	}
 
 	@Override
 	public boolean performFinish() {
 		System.out.println("Performing finish");
+		cleanUp();
 		return true;
 	}
 
 	@Override
 	public boolean performCancel() {
 		System.out.println("Canceled");
+		cleanUp();
 		return true;
+	}
+	
+	private void cleanUp() {
+		for(IWizardPage p : getPages()) {
+			p.dispose();
+		}
 	}
 
 	@Override

@@ -69,7 +69,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 	 * values accordingly.
 	 */
 	private void setValuesFromSettings() {
-		System.out.println("[WizardPage] Applying setting values");
+		System.out.println("[WizardPage] (Options) Applying setting values");
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
 
@@ -80,6 +80,7 @@ public class OptionSelectionWizardPage extends WizardPage {
 		}
 
 		// Checkboxes
+		this.ckboxCreateVectorMap.setSelection(section.getBoolean("createVectorMap"));
 		this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
 
 		// Validate inputs
@@ -103,7 +104,6 @@ public class OptionSelectionWizardPage extends WizardPage {
 		fd_chkBoxCreateVectorMap.left = new FormAttachment(0);
 		this.ckboxCreateVectorMap.setLayoutData(fd_chkBoxCreateVectorMap);
 		this.ckboxCreateVectorMap.setText("Create Vector Map");
-		// this.ckboxCreateVectorMap.setEnabled(false);
 		this.ckboxCreateVectorMap.addSelectionListener(selectionListener);
 
 		// POIs
@@ -217,15 +217,6 @@ public class OptionSelectionWizardPage extends WizardPage {
 		WizardPageManager.getInstance().setWizardPageEnabled(
 				POIWizardPage.getStaticTitle(),
 				this.ckboxCreatePOIs.getSelection());
-
-		if (this.ckboxCreateVectorMap.getSelection()) {
-			System.out.println("[X] Create vector map");
-		}
-		if (this.ckboxCreatePOIs.getSelection()) {
-			System.out.println("[X] Create POIs");
-		}
-
-		System.out.println("Config: " + WizardPageManager.getInstance());
 	}
 
 	@Override
