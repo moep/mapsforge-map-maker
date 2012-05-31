@@ -179,6 +179,13 @@ public class POIWizardPage extends WizardPage {
 
 	@Override
 	public boolean isPageComplete() {
+		// Set page valid without any checks if this page is not used
+		if (this.settings.getSection(
+				POIWizardPage.getSettingsSectionName()).getBoolean(
+				"createPOIs") == false) {
+			return true;
+		}
+
 		boolean isValid = true;
 
 		// Output file may not be empty

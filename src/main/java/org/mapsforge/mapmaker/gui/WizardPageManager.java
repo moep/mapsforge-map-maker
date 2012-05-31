@@ -92,7 +92,7 @@ class WizardPageManager {
 		}
 
 		// Page not found
-		if (pages[pos] != page) {
+		if (pos == pages.length || pages[pos] != page) {
 			return -1;
 		}
 

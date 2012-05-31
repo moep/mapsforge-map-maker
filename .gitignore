@@ -1,5 +1,5 @@
 test.poi*
-lastSession.settings
+lastSession.settings.xml
 /.classpath
 /target
 /.pmd_ruleset.xml

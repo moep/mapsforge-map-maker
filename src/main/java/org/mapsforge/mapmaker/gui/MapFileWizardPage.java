@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -29,7 +30,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class MapFileWizardPage extends WizardPage {
 	private IDialogSettings settings;
+	private final IDialogSettings DEFAULT_SETTINGS;
 	private final static String SETTINGS_SECTION_NAME = "mapfile";
 	private final static String TITLE = "Mapfile Settings";
 	private Table inpZoomIntervalConfiguration;
@@ -101,8 +102,14 @@ public class MapFileWizardPage extends WizardPage {
 		setPageComplete(false);
 		setTitle(pageName);
 		setImageDescriptor(ImageDescriptor.createFromFile(null, "logo.png"));
+
 		this.settings = settings;
-		this.settings.addNewSection(SETTINGS_SECTION_NAME);
+		this.DEFAULT_SETTINGS = createDefaultSettings();
+		if (this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
+			System.out
+					.println("[WizardPage] (MapFile) Using default settings.");
+			this.settings.addSection(this.DEFAULT_SETTINGS);
+		}
 
 		// Event listener for all checkboxes
 		this.checkBoxSelectionListener = new SelectionListener() {
@@ -133,6 +140,10 @@ public class MapFileWizardPage extends WizardPage {
 
 	public static String getSettingsSectionName() {
 		return SETTINGS_SECTION_NAME;
+	}
+
+	IDialogSettings getDefaultSettings() {
+		return this.DEFAULT_SETTINGS;
 	}
 
 	public static String getStaticTitle() {
@@ -500,7 +511,8 @@ public class MapFileWizardPage extends WizardPage {
 		addEventListeners();
 		setValuesFromSettings();
 		onInputChanged();
-		System.out.println("Controls have been created");
+		System.out
+				.println("[WizardPage] (MapFile) Controls have been created.");
 
 	}
 
@@ -589,24 +601,35 @@ public class MapFileWizardPage extends WizardPage {
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
 
-		// Text field
-		// if(section.get("inputFilePath") != null) {
-		// this.inputFilePath = section.get("inputFilePath");
-		// this.tfInputFilePath.setText(section.get("inputFilePath"));
-		// }
-
 		// Checkboxes
-		// this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
+		this.chkEnableHDDCache.setSelection(section
+				.getBoolean("enableHHDCache"));
+		this.chkEnableCustomStartPosition.setSelection(section
+				.getBoolean("enableCustomStartPosition"));
+		this.chkEnableCustomMapStartZoom.setSelection(section
+				.getBoolean("enableCustomStartZoomLevel"));
+		this.chkEnableCustomBoundingBox.setSelection(section
+				.getBoolean("enableCustomBB"));
+		this.chkEnableUseCustomTagConfig.setSelection(section
+				.getBoolean("enableCustomTagConfig"));
+		this.chkEnablePolygonClipping.setSelection(section
+				.getBoolean("enablePolygonClipping"));
+		this.chkEnableWayClipping.setSelection(section
+				.getBoolean("enableWayClipping"));
+		this.chkComputeLabelPositions.setSelection(section
+				.getBoolean("computeLabelPositions"));
+		this.chkEnableDebugFile.setSelection(section
+				.getBoolean("enableDebugFile"));
 
 		// Zoom interval configuration
-		this.inpZoomIntervalConfiguration.setRedraw(false);
-		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-				.setText(new String[] { "5", "0", "7" });
-		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-				.setText(new String[] { "10", "8", "11" });
-		new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-				.setText(new String[] { "14", "12", "21" });
-		this.inpZoomIntervalConfiguration.setRedraw(true);
+		// this.inpZoomIntervalConfiguration.setRedraw(false);
+		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+		// .setText(new String[] { "5", "0", "7" });
+		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+		// .setText(new String[] { "10", "8", "11" });
+		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
+		// .setText(new String[] { "14", "12", "21" });
+		// this.inpZoomIntervalConfiguration.setRedraw(true);
 
 		// Validate inputs
 		onInputChanged();
@@ -668,7 +691,7 @@ public class MapFileWizardPage extends WizardPage {
 				.getSection(SETTINGS_SECTION_NAME);
 
 		// Output file path
-		section.put("mapFilePath", this.tfOutputFilePath.getText());
+		// section.put("mapFilePath", this.tfOutputFilePath.getText());
 
 		// Checkboxes
 		section.put("enableHDDCache", this.chkEnableHDDCache.getSelection());
@@ -744,6 +767,13 @@ public class MapFileWizardPage extends WizardPage {
 
 	@Override
 	public boolean isPageComplete() {
+		// Set page valid without any checks if this page is not used
+		if (this.settings.getSection(
+				OptionSelectionWizardPage.getSettingsSectionName()).getBoolean(
+				"createVectorMap") == false) {
+			return true;
+		}
+
 		boolean isValid = true;
 
 		// Output file may not be empty
@@ -835,7 +865,7 @@ public class MapFileWizardPage extends WizardPage {
 					setComponentInValid(this.tfBBMaxLat,
 							"Max. latitude must be between -90° and +90°");
 				}
-				if(maxLat <= minLat) {
+				if (maxLat <= minLat) {
 					setComponentInValid(this.tfBBMaxLat,
 							"Max. latitude must be greater than min. latitude.");
 				}
@@ -843,7 +873,7 @@ public class MapFileWizardPage extends WizardPage {
 				setComponentInValid(this.tfBBMaxLat,
 						"Max. latitude may not be empty and must be a number.");
 			}
-			
+
 			double maxLon = 181;
 			try {
 				maxLon = Double.parseDouble(maxLonTxt);
@@ -852,7 +882,7 @@ public class MapFileWizardPage extends WizardPage {
 					setComponentInValid(this.tfBBMaxLon,
 							"Max. longitude must be between -180° and +180°");
 				}
-				if(maxLon <= minLon) {
+				if (maxLon <= minLon) {
 					setComponentInValid(this.tfBBMaxLon,
 							"Max. longitude must be greater than min. longitude.");
 				}
@@ -893,5 +923,85 @@ public class MapFileWizardPage extends WizardPage {
 		super.dispose();
 		// Uncomment this in case a non-system colors are used
 		// this.errorBgColor.dispose();
+	}
+
+	/**
+	 * Creates default values for this wizard page's elements. The resulting
+	 * settings object can be appended to the wizard's settings object.
+	 * 
+	 * @return Default settings for this wizard page.
+	 */
+	private IDialogSettings createDefaultSettings() {
+		IDialogSettings section = new DialogSettings(SETTINGS_SECTION_NAME);
+
+		// Output file path
+		section.put("mapFilePath", "");
+
+		// Checkboxes
+		section.put("enableHDDCache", false);
+		section.put("enableCustomStartPosition", false);
+		section.put("enableCustomStartZoomLevel", false);
+		section.put("enableCustomBB", false);
+		section.put("enableCustomTagConfig", false);
+		section.put("enablePolygonClipping", true);
+		section.put("enableWayClipping", true);
+		section.put("computeLabelPositions", true);
+		section.put("enableDebugFile", false);
+
+		// Start position
+		section.put("startPositionLat", 0);
+		section.put("startPositionLon", 0);
+
+		// Map start zoom level
+		section.put("mapZoomLevel", 14);
+
+		// Bounding box
+		section.put("BBMinLat", -90);
+		section.put("BBMaxLat", 90);
+		section.put("BBMinLon", -180);
+		section.put("BBMaxLon", 180);
+
+		// Preferred language
+		section.put("preferredLanguage", "");
+
+		// Comment
+		section.put("comment", "Created with m³.");
+
+		// Tag configuration
+		section.put("tagConfigurationFilePath", "");
+
+		// Simplification factor
+		section.put("simplificationFactor", 5);
+
+		// BB enlargement
+		section.put("BBEnlargement", 20);
+
+		// Zoom interval configuration
+		section.put("zoomIntervalConfiguration", "5,0,7,10,8,11,14,12,21");
+
+		return section;
+	}
+
+	/**
+	 * Fills the "map file path" textfield with a string derived from the input
+	 * file's name. If the textfield is not empty this method does nothing.
+	 * 
+	 * @param inputFilePath
+	 *            The path to the file that contains OSM data to be converted.
+	 */
+	void updateFilePath(String inputFilePath) {
+		if(this.tfOutputFilePath == null) {
+			return;
+		}
+		
+		if (this.tfOutputFilePath.getText() == null
+				|| this.tfOutputFilePath.getText().equals("")) {
+			String mapFilePath = inputFilePath.split("(.osm|.osm.pbf)")[0]
+					+ ".map";
+			this.tfOutputFilePath.setText(mapFilePath);
+			System.out
+					.println("[WizardPage] (MapFile) MapFileWizard's map file path has been set to '"
+							+ mapFilePath + "'");
+		}
 	}
 }

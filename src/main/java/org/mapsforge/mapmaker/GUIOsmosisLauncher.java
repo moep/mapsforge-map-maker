@@ -21,7 +21,7 @@ public class GUIOsmosisLauncher {
 	public static void main(String[] args) {
 		Display display = new Display();
 		Shell shell = new Shell(display);
-
+		
 		// Launch wizard
         Wizard w = new MainWizard();
         WizardDialog dialog = new WizardDialog(shell, w);
@@ -77,7 +77,12 @@ public class GUIOsmosisLauncher {
 				Pipeline pipeline = new Pipeline(taskRegistrar
 						.getFactoryRegister());
 				System.out.println("[OsmosisThread] Preparing pipeline");
+				try {
 				pipeline.prepare(builder.getTaskConfigurations());
+				} catch (OutOfMemoryError e) {
+					// TODO Proper error report
+					throw e;
+				}
 				System.out.println("[OsmosisThread] Starting pipeline");
 				pipeline.execute();
 

@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Text;
 public class OptionSelectionWizardPage extends WizardPage {
 	private String inputFilePath;
 	private IDialogSettings settings;
-	private final static String SETTINGS_SECTION_NAME = "general";
+	private final static String SETTINGS_SECTION_NAME = "options";
 
 	protected Text tfInputFilePath;
 	private FormData fd_text;
@@ -80,7 +80,8 @@ public class OptionSelectionWizardPage extends WizardPage {
 		}
 
 		// Checkboxes
-		this.ckboxCreateVectorMap.setSelection(section.getBoolean("createVectorMap"));
+		this.ckboxCreateVectorMap.setSelection(section
+				.getBoolean("createVectorMap"));
 		this.ckboxCreatePOIs.setSelection(section.getBoolean("createPOIs"));
 
 		// Validate inputs
@@ -202,7 +203,21 @@ public class OptionSelectionWizardPage extends WizardPage {
 	private void updateSettings() {
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
+
+		// Input file
 		section.put("inputFilePath", this.tfInputFilePath.getText());
+
+		// Update MapFileWizard's default settings
+		if (this.tfInputFilePath.getText() != null
+				&& !this.tfInputFilePath.getText().equals("")) {
+			MapFileWizardPage p = (MapFileWizardPage) this.getWizard().getPage(
+					MapFileWizardPage.getStaticTitle());
+			
+			p.updateFilePath(this.tfInputFilePath.getText());
+			
+			
+		}
+
 		section.put("createVectorMap", this.ckboxCreateVectorMap.getSelection());
 		section.put("createPOIs", this.ckboxCreatePOIs.getSelection());
 
@@ -263,6 +278,9 @@ public class OptionSelectionWizardPage extends WizardPage {
 
 	@Override
 	public IWizardPage getNextPage() {
+		// System.out.println("[WizardPage] (Options) Next page: "
+		// + WizardPageManager.getInstance().getNextWizardPage(this)
+		// .getTitle());
 		return WizardPageManager.getInstance().getNextWizardPage(this);
 	}
 }
