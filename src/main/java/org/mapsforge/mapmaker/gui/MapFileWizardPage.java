@@ -14,6 +14,7 @@
  */
 package org.mapsforge.mapmaker.gui;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -27,6 +28,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -57,11 +59,12 @@ public class MapFileWizardPage extends WizardPage {
 	private Table inpZoomIntervalConfiguration;
 	private SelectionListener checkBoxSelectionListener;
 	private ModifyListener textFieldModificationListener;
+	private boolean pageHasBeenCreated = false;
+
 	/**
 	 * Country codes as defined in ISO_3166-1 (See: {@link http
 	 * ://en.wikipedia.org/wiki/ISO_3166-1_alpha-2}).
 	 */
-	// TODO use hashes
 	private final static Collection<String> ACCEPTED_LANGUAGES = Arrays
 			.asList(Locale.getISOCountries());
 
@@ -96,6 +99,8 @@ public class MapFileWizardPage extends WizardPage {
 	private Button chkEnableCustomBoundingBox;
 	private Group grpBoundingBox;
 	private Group grpMapStartPositions;
+	private Button btnBrowseTagConfigurationFile;
+	private Text tfZoomIntervalConfig;
 
 	protected MapFileWizardPage(String pageName, IDialogSettings settings) {
 		super(pageName);
@@ -108,7 +113,7 @@ public class MapFileWizardPage extends WizardPage {
 		if (this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
 			System.out
 					.println("[WizardPage] (MapFile) Using default settings.");
-			this.settings.addSection(this.DEFAULT_SETTINGS);
+			this.settings.addSection(createDefaultSettings());
 		}
 
 		// Event listener for all checkboxes
@@ -344,6 +349,7 @@ public class MapFileWizardPage extends WizardPage {
 		// ADVANCED SETTINGS
 		//
 
+		// Tag configuration
 		chkEnableUseCustomTagConfig = new Button(container, SWT.CHECK);
 		FormData td_chkEnableUseCustomTagConfig = new FormData();
 		td_chkEnableUseCustomTagConfig.left = new FormAttachment(0);
@@ -361,7 +367,7 @@ public class MapFileWizardPage extends WizardPage {
 		tfTagConfigurationFilePath.setLayoutData(fd_tfTagConfigurationFilePath);
 		tfTagConfigurationFilePath.setText("fgsdlkfndklj");
 
-		Button btnBrowseTagConfigurationFile = new Button(container, SWT.PUSH);
+		btnBrowseTagConfigurationFile = new Button(container, SWT.PUSH);
 		fd_tfTagConfigurationFilePath.right = new FormAttachment(
 				btnBrowseTagConfigurationFile, -6);
 		FormData fd_btnBrowseTagConfigurationFile = new FormData();
@@ -372,6 +378,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setLayoutData(fd_btnBrowseTagConfigurationFile);
 		btnBrowseTagConfigurationFile.setText("...");
 
+		// Polygon clipping
 		chkEnablePolygonClipping = new Button(container, SWT.CHECK);
 		FormData fd_chkEnablePolygonClipping = new FormData();
 		fd_chkEnablePolygonClipping.top = new FormAttachment(
@@ -381,6 +388,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("use polygon clipping to reduce map file size (minimal performance overhead)");
 		chkEnablePolygonClipping.setSelection(true);
 
+		// Way clipping
 		chkEnableWayClipping = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableWayClipping = new FormData();
 		fd_chkEnableWayClipping.top = new FormAttachment(
@@ -390,6 +398,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Use way clipping to reduce map file size (minimal performance overhead)");
 		chkEnableWayClipping.setSelection(true);
 
+		// Compute label positions
 		chkComputeLabelPositions = new Button(container, SWT.CHECK);
 		FormData fd_chkComputeLabelPositions = new FormData();
 		chkComputeLabelPositions.setLayoutData(fd_chkComputeLabelPositions);
@@ -399,6 +408,7 @@ public class MapFileWizardPage extends WizardPage {
 				.setText("Compute label position for polygons that cover multiple tiles (minimal performance overhead)");
 		chkComputeLabelPositions.setSelection(true);
 
+		// Debug file
 		chkEnableDebugFile = new Button(container, SWT.CHECK);
 		FormData fd_chkEnableDebugFile = new FormData();
 		fd_chkEnableDebugFile.top = new FormAttachment(
@@ -454,42 +464,25 @@ public class MapFileWizardPage extends WizardPage {
 		lblZoomIntervalConfig.setLayoutData(fd_lblZoomIntervalConfig);
 		lblZoomIntervalConfig.setText("Zoom interval configuration:");
 
-		Button btnAddZoomInterval = new Button(container, SWT.PUSH);
-		FormData fd_btnAddZoomInterval = new FormData();
-		fd_btnAddZoomInterval.top = new FormAttachment(lblZoomIntervalConfig, 6);
-		btnAddZoomInterval.setLayoutData(fd_btnAddZoomInterval);
-		btnAddZoomInterval.setImage(new Image(Display.getCurrent(),
-				"list-add.png"));
-		btnAddZoomInterval.setToolTipText("Add a zoom interval");
-
-		Button btnRemoveZoomInterval = new Button(container, SWT.PUSH);
-		FormData fd_btnRemoveZoomInterval = new FormData();
-		fd_btnRemoveZoomInterval.bottom = new FormAttachment(
-				btnAddZoomInterval, 0, SWT.BOTTOM);
-		fd_btnRemoveZoomInterval.left = new FormAttachment(btnAddZoomInterval,
-				6);
-		btnRemoveZoomInterval.setLayoutData(fd_btnRemoveZoomInterval);
-		btnRemoveZoomInterval.setImage(new Image(Display.getCurrent(),
-				"list-remove.png"));
-
-		inpZoomIntervalConfiguration = new Table(container, SWT.MULTI
-				| SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
-		FormData fd_inpZoomIntervalConfiguration = new FormData(SWT.DEFAULT, 80);
-		fd_inpZoomIntervalConfiguration.top = new FormAttachment(
-				btnAddZoomInterval, 3);
-		fd_inpZoomIntervalConfiguration.left = new FormAttachment(0);
-		fd_inpZoomIntervalConfiguration.right = new FormAttachment(100);
-		inpZoomIntervalConfiguration
-				.setLayoutData(fd_inpZoomIntervalConfiguration);
-		initializeZoomIntervalTable();
+		tfZoomIntervalConfig = new Text(container, SWT.NONE);
+		FormData fd_tfZoomIntervalConfig = new FormData();
+		fd_tfZoomIntervalConfig.left = new FormAttachment(
+				inpSimplificationFactor, 0, SWT.LEFT);
+		fd_tfZoomIntervalConfig.bottom = new FormAttachment(
+				lblZoomIntervalConfig, 0, SWT.BOTTOM);
+		fd_tfZoomIntervalConfig.top = new FormAttachment(inpBBEnlargement, 6);
+		tfZoomIntervalConfig.setLayoutData(fd_tfZoomIntervalConfig);
+		tfZoomIntervalConfig.setText("llkjgk");
+		System.out.println("SIZE: "
+				+ tfZoomIntervalConfig.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
 		// RESTORE DEFAULT SETTINGS
-		Button btnDefaultSettings = new Button(container, SWT.PUSH);
-		FormData fd_btnDefaultSettings = new FormData();
-		fd_btnDefaultSettings.top = new FormAttachment(
-				inpZoomIntervalConfiguration, 6);
-		btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
-		btnDefaultSettings.setText("Restore default settings");
+		// Button btnDefaultSettings = new Button(container, SWT.PUSH);
+		// FormData fd_btnDefaultSettings = new FormData();
+		// fd_btnDefaultSettings.top = new FormAttachment(
+		// inpZoomIntervalConfiguration, 6);
+		// btnDefaultSettings.setLayoutData(fd_btnDefaultSettings);
+		// btnDefaultSettings.setText("Restore default settings");
 
 		// SCROLLBARS
 		// Allow container's content to be scrolled by defining container as
@@ -536,7 +529,6 @@ public class MapFileWizardPage extends WizardPage {
 				dialog.setFilterExtensions(new String[] { "*.map" });
 				// XXX use System.getProperty here
 				dialog.setFilterPath("./");
-				// TODO Read basename from previous input
 				dialog.setFileName("out.map");
 				String selection = dialog.open();
 				if (selection != null) {
@@ -585,11 +577,31 @@ public class MapFileWizardPage extends WizardPage {
 		// Preferred language
 		this.tfPreferredLanguage
 				.addModifyListener(this.textFieldModificationListener);
-	}
 
-	protected void setFilePath(String text, Text widget) {
-		// TODO Auto-generated method stub
+		// Tag configuration
+		this.tfTagConfigurationFilePath
+				.addModifyListener(this.textFieldModificationListener);
+		this.btnBrowseTagConfigurationFile
+				.addSelectionListener(new SelectionAdapter() {
 
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						FileDialog d = new FileDialog(MapFileWizardPage.this
+								.getShell());
+						d.setFilterPath(System.getProperty("user.home"));
+						d.setFilterExtensions(new String[] { "*.xml" });
+						d.setFilterNames(new String[] { "XML (*.xml)" });
+						String selection = d.open();
+						if (selection != null) {
+							MapFileWizardPage.this.tfTagConfigurationFilePath
+									.setText(selection);
+						}
+					}
+
+				});
+		
+		// Zoom interval data
+		this.tfZoomIntervalConfig.addModifyListener(this.textFieldModificationListener);
 	}
 
 	/**
@@ -601,57 +613,175 @@ public class MapFileWizardPage extends WizardPage {
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
 
+		// Output file path
+		if (section.get("mapFilePath") != null) {
+			this.tfOutputFilePath.setText(section.get("mapFilePath"));
+		} else {
+			this.tfOutputFilePath.setText(this.DEFAULT_SETTINGS
+					.get("mapFilePath"));
+		}
+
 		// Checkboxes
-		this.chkEnableHDDCache.setSelection(section
-				.getBoolean("enableHHDCache"));
-		this.chkEnableCustomStartPosition.setSelection(section
-				.getBoolean("enableCustomStartPosition"));
-		this.chkEnableCustomMapStartZoom.setSelection(section
-				.getBoolean("enableCustomStartZoomLevel"));
-		this.chkEnableCustomBoundingBox.setSelection(section
-				.getBoolean("enableCustomBB"));
-		this.chkEnableUseCustomTagConfig.setSelection(section
-				.getBoolean("enableCustomTagConfig"));
-		this.chkEnablePolygonClipping.setSelection(section
-				.getBoolean("enablePolygonClipping"));
-		this.chkEnableWayClipping.setSelection(section
-				.getBoolean("enableWayClipping"));
-		this.chkComputeLabelPositions.setSelection(section
-				.getBoolean("computeLabelPositions"));
-		this.chkEnableDebugFile.setSelection(section
-				.getBoolean("enableDebugFile"));
+		if (section.get("enableHDDCache") != null) {
+			this.chkEnableHDDCache.setSelection(section
+					.getBoolean("enableHDDCache"));
+		} else {
+			System.out.println("Using default value");
+			this.chkEnableHDDCache.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableHDDCache"));
+		}
+		if (section.get("enableCustomStartPosition") != null) {
+			this.chkEnableCustomStartPosition.setSelection(section
+					.getBoolean("enableCustomStartPosition"));
+		} else {
+			this.chkEnableCustomStartPosition
+					.setSelection(this.DEFAULT_SETTINGS
+							.getBoolean("enableCustomStartPosition"));
+		}
+		if (section.get("enableCustomStartZoomLevel") != null) {
+			this.chkEnableCustomMapStartZoom.setSelection(section
+					.getBoolean("enableCustomStartZoomLevel"));
+		} else {
+			this.chkEnableCustomMapStartZoom.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableCustomStartZoomLevel"));
+		}
+		if (section.get("enableCustomBB") != null) {
+			this.chkEnableCustomBoundingBox.setSelection(section
+					.getBoolean("enableCustomBB"));
+		} else {
+			this.chkEnableCustomBoundingBox.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableCustomBB"));
+		}
+		if (section.get("enableCustomTagConfig") != null) {
+			this.chkEnableUseCustomTagConfig.setSelection(section
+					.getBoolean("enableCustomTagConfig"));
+		} else {
+			this.chkEnableUseCustomTagConfig.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableCustomTagConfig"));
+		}
+		if (section.get("enablePolygonClipping") != null) {
+			this.chkEnablePolygonClipping.setSelection(section
+					.getBoolean("enablePolygonClipping"));
+		} else {
+			this.chkEnablePolygonClipping.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enablePolygonClipping"));
+		}
+		if (section.get("enableWayClipping") != null) {
+			this.chkEnableWayClipping.setSelection(section
+					.getBoolean("enableWayClipping"));
+		} else {
+			this.chkEnableWayClipping.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableWayClipping"));
+		}
+		if (section.get("computeLabelPositions") != null) {
+			this.chkComputeLabelPositions.setSelection(section
+					.getBoolean("computeLabelPositions"));
+		} else {
+			this.chkComputeLabelPositions.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("computeLabelPositions"));
+		}
+		if (section.get("enableDebugFile") != null) {
+			this.chkEnableDebugFile.setSelection(section
+					.getBoolean("enableDebugFile"));
+		} else {
+			this.chkEnableDebugFile.setSelection(this.DEFAULT_SETTINGS
+					.getBoolean("enableDebugFile"));
+		}
+
+		// Start position
+		if (section.getBoolean("enableCustomStartPosition")) {
+			if (section.get("startPositionLat") == null) {
+				this.tfMapStartLat.setText(this.DEFAULT_SETTINGS
+						.get("startPositionLat"));
+			} else {
+				this.tfMapStartLat.setText(section.get("startPositionLat"));
+			}
+			if (section.get("startPositionLon") == null) {
+				this.tfMapStartLon.setText(this.DEFAULT_SETTINGS
+						.get("startPositionLon"));
+			} else {
+				this.tfMapStartLon.setText(section.get("startPositionLon"));
+			}
+		}
+
+		// Custom bounding box
+		if (section.getBoolean("enableCustomBB")) {
+			if (section.get("BBMinLat") != null) {
+				this.tfBBMinLat.setText(section.get("BBMinLat"));
+			} else {
+				this.tfBBMinLat.setText(this.DEFAULT_SETTINGS.get("BBMinLat"));
+			}
+			if (section.get("BBMaxLat") != null) {
+				this.tfBBMaxLat.setText(section.get("BBMaxLat"));
+			} else {
+				this.tfBBMaxLat.setText(this.DEFAULT_SETTINGS.get("BBMaxLat"));
+			}
+			if (section.get("BBMinLon") != null) {
+				this.tfBBMinLon.setText(section.get("BBMinLon"));
+			} else {
+				this.tfBBMinLon.setText(this.DEFAULT_SETTINGS.get("BBMinLon"));
+			}
+			if (section.get("BBMaxLon") != null) {
+				this.tfBBMaxLon.setText(section.get("BBMaxLon"));
+			} else {
+				this.tfBBMaxLon.setText(this.DEFAULT_SETTINGS.get("BBMaxLon"));
+			}
+		}
+
+		// Preferred language
+		if (section.get("preferredLanguage") != null) {
+			this.tfPreferredLanguage.setText(section.get("preferredLanguage"));
+		} else {
+			this.tfPreferredLanguage.setText(this.DEFAULT_SETTINGS
+					.get("preferredLanguage"));
+		}
+
+		// Comment
+		if (section.get("comment") != null
+				&& !section.get("comment").equals("")) {
+			this.tfComment.setText(section.get("comment"));
+		} else {
+			this.tfComment.setText(DEFAULT_SETTINGS.get("comment"));
+		}
+
+		// Tag configuration
+		if (section.get("tagConfigurationFilePath") != null) {
+			this.tfTagConfigurationFilePath.setText(section
+					.get("tagConfigurationFilePath"));
+		} else {
+			this.tfTagConfigurationFilePath.setText(this.DEFAULT_SETTINGS
+					.get("tagConfigurationFilePath"));
+		}
+
+		// Simplification factor
+		if (section.get("simplificationFactor") != null) {
+			System.out.println("Simplification factor != null ");
+			this.inpSimplificationFactor.setSelection(section
+					.getInt("simplificationFactor"));
+		} else {
+			this.inpSimplificationFactor.setSelection(this.DEFAULT_SETTINGS
+					.getInt("simplificationFactor"));
+		}
+
+		// BB enlargement
+		if (section.get("BBEnlargement") != null) {
+			this.inpBBEnlargement.setSelection(section.getInt("BBEnlargement"));
+		} else {
+			this.inpBBEnlargement.setSelection(this.DEFAULT_SETTINGS
+					.getInt("BBEnlargement"));
+		}
 
 		// Zoom interval configuration
-		// this.inpZoomIntervalConfiguration.setRedraw(false);
-		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-		// .setText(new String[] { "5", "0", "7" });
-		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-		// .setText(new String[] { "10", "8", "11" });
-		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
-		// .setText(new String[] { "14", "12", "21" });
-		// this.inpZoomIntervalConfiguration.setRedraw(true);
+		if (section.get("zoomIntervalConfiguration") != null) {
+			this.tfZoomIntervalConfig.setText(section
+					.get("zoomIntervalConfiguration"));
+		} else {
+			this.tfZoomIntervalConfig.setText(this.DEFAULT_SETTINGS
+					.get("zoomIntervalConfiguration"));
+		}
 
 		// Validate inputs
 		onInputChanged();
-	}
-
-	private void initializeZoomIntervalTable() {
-		this.inpZoomIntervalConfiguration.setLinesVisible(true);
-		this.inpZoomIntervalConfiguration.setHeaderVisible(true);
-
-		TableColumn cols[] = new TableColumn[3];
-		for (int i = 0; i < cols.length; i++) {
-			cols[i] = new TableColumn(this.inpZoomIntervalConfiguration,
-					SWT.NONE);
-		}
-
-		cols[0].setText("Base zoom level");
-		cols[1].setText("Minimal zoom level");
-		cols[2].setText("Maximal zoom level");
-
-		for (int i = 0; i < cols.length; i++) {
-			cols[i].pack();
-		}
 	}
 
 	void onInputChanged() {
@@ -684,14 +814,27 @@ public class MapFileWizardPage extends WizardPage {
 		// Custom zoom level
 		this.inpMapStartZoom.setEnabled(this.chkEnableCustomMapStartZoom
 				.getSelection());
+
+		// Tag config file
+		this.tfTagConfigurationFilePath
+				.setEnabled(this.chkEnableUseCustomTagConfig.getSelection());
+		this.btnBrowseTagConfigurationFile
+				.setEnabled(this.chkEnableUseCustomTagConfig.getSelection());
 	}
 
 	private void updateSettings() {
+		// Don't update if input values are set automatically
+		if (!this.pageHasBeenCreated) {
+			return;
+		}
+
+		System.out.println("[WizardPage] (MapFile) Updating settings");
+
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
 
 		// Output file path
-		// section.put("mapFilePath", this.tfOutputFilePath.getText());
+		section.put("mapFilePath", this.tfOutputFilePath.getText());
 
 		// Checkboxes
 		section.put("enableHDDCache", this.chkEnableHDDCache.getSelection());
@@ -723,8 +866,6 @@ public class MapFileWizardPage extends WizardPage {
 		}
 
 		if (section.getBoolean("enableCustomBB")) {
-			section.put("enableCustomBB",
-					this.chkEnableCustomBoundingBox.getSelection());
 			section.put("BBMinLat", this.tfBBMinLat.getText());
 			section.put("BBMaxLat", this.tfBBMaxLat.getText());
 			section.put("BBMinLon", this.tfBBMinLon.getText());
@@ -749,20 +890,8 @@ public class MapFileWizardPage extends WizardPage {
 		section.put("BBEnlargement", this.inpBBEnlargement.getSelection());
 
 		// Zoom interval configuration
-		StringBuilder sb = new StringBuilder();
-		for (TableItem i : this.inpZoomIntervalConfiguration.getItems()) {
-			sb.append(i.getText(0));
-			sb.append(",");
-			sb.append(i.getText(1));
-			sb.append(",");
-			sb.append(i.getText(2));
-			sb.append(",");
-		}
-
-		if (sb.length() >= 1) {
-			section.put("zoomIntervalConfiguration",
-					sb.substring(0, sb.length() - 1).toString());
-		}
+		section.put("zoomIntervalConfiguration",
+				this.tfZoomIntervalConfig.getText());
 	}
 
 	@Override
@@ -893,12 +1022,72 @@ public class MapFileWizardPage extends WizardPage {
 		}
 
 		// Preferred language must be empty or valid
-		if (!this.tfPreferredLanguage.getText().equalsIgnoreCase("")
+		if (!this.tfPreferredLanguage.getText().equals("")
 				&& !ACCEPTED_LANGUAGES.contains(this.tfPreferredLanguage
 						.getText().toUpperCase())) {
 			super.setErrorMessage("The provided language is not valid.");
 			isValid = false;
 		}
+
+		// Tag configuration file
+		boolean tagConfigurationFileIsValid = true;
+		if (this.chkEnableUseCustomTagConfig.getSelection()) {
+
+			if (this.tfTagConfigurationFilePath.getText().equals("")) {
+				setComponentInValid(this.tfTagConfigurationFilePath,
+						"Please provide a tag configuration file.");
+				tagConfigurationFileIsValid = false;
+			}
+
+			File f = new File(this.tfTagConfigurationFilePath.getText());
+			if (!f.isFile()) {
+				setComponentInValid(this.tfTagConfigurationFilePath, "'"
+						+ this.tfTagConfigurationFilePath.getText()
+						+ "' is not a file.");
+				tagConfigurationFileIsValid = false;
+			}
+
+			isValid &= tagConfigurationFileIsValid;
+
+			if (tagConfigurationFileIsValid) {
+				setComponentValid(this.tfTagConfigurationFilePath);
+			}
+		}
+
+		// Zoom interval configuration
+		boolean zoomIntervalConfigIsValid = true;
+		String zoomIntervalConfigStr = this.tfZoomIntervalConfig.getText();
+		String[] zoomIntervalData = zoomIntervalConfigStr.split(",");
+
+		try {
+			if (zoomIntervalData.length % 3 == 0) {
+				for (int i = 0; i < zoomIntervalData.length / 3; i++) {
+					// min < max
+					zoomIntervalConfigIsValid &= Integer
+							.parseInt(zoomIntervalData[3 * i + 1]) < Integer
+							.parseInt(zoomIntervalData[3 * i + 2]);
+					
+					// base  > min
+					zoomIntervalConfigIsValid &= Integer.parseInt(zoomIntervalData[3*i]) > Integer.parseInt(zoomIntervalData[3*i+1]);
+					
+					// base < max
+					zoomIntervalConfigIsValid &= Integer.parseInt(zoomIntervalData[3*i]) < Integer.parseInt(zoomIntervalData[3*i+2]);
+				}
+			} else {
+				zoomIntervalConfigIsValid = false;
+			}
+		} catch (NumberFormatException e) {
+			zoomIntervalConfigIsValid = false;
+		}
+
+		if (!zoomIntervalConfigIsValid) {
+			setComponentInValid(this.tfZoomIntervalConfig,
+					"Invalid zoom interval data.");
+		} else {
+			setComponentValid(this.tfZoomIntervalConfig);
+		}
+
+		isValid &= zoomIntervalConfigIsValid;
 
 		return isValid;
 	}
@@ -938,7 +1127,7 @@ public class MapFileWizardPage extends WizardPage {
 		section.put("mapFilePath", "");
 
 		// Checkboxes
-		section.put("enableHDDCache", false);
+		section.put("enableHDDCache", true);
 		section.put("enableCustomStartPosition", false);
 		section.put("enableCustomStartZoomLevel", false);
 		section.put("enableCustomBB", false);
@@ -971,7 +1160,7 @@ public class MapFileWizardPage extends WizardPage {
 		section.put("tagConfigurationFilePath", "");
 
 		// Simplification factor
-		section.put("simplificationFactor", 5);
+		section.put("simplificationFactor", 500);
 
 		// BB enlargement
 		section.put("BBEnlargement", 20);
@@ -990,10 +1179,10 @@ public class MapFileWizardPage extends WizardPage {
 	 *            The path to the file that contains OSM data to be converted.
 	 */
 	void updateFilePath(String inputFilePath) {
-		if(this.tfOutputFilePath == null) {
+		if (this.tfOutputFilePath == null) {
 			return;
 		}
-		
+
 		if (this.tfOutputFilePath.getText() == null
 				|| this.tfOutputFilePath.getText().equals("")) {
 			String mapFilePath = inputFilePath.split("(.osm|.osm.pbf)")[0]

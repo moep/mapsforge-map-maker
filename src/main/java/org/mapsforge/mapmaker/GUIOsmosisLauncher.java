@@ -11,6 +11,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.mapsforge.mapmaker.gui.MainWizard;
+import org.mapsforge.mapmaker.gui.MapFileWizardPage;
+import org.mapsforge.mapmaker.gui.OptionSelectionWizardPage;
+import org.mapsforge.mapmaker.gui.POIWizardPage;
 import org.mapsforge.mapmaker.gui.ProgressGUI;
 import org.mapsforge.mapmaker.logging.ProgressManager;
 import org.openstreetmap.osmosis.core.TaskRegistrar;
@@ -98,13 +101,10 @@ public class GUIOsmosisLauncher {
 	}
 
 	private static void printSettings(IDialogSettings settings) {
-		System.out.println("#Sections: " + settings.getSections().length);
-		for (IDialogSettings s : settings.getSections()) {
-			System.out.println(" [*] " + s.getName());
-		}
-
+		System.out.println("== Settings ==");
+		
 		System.out.println("[General settings]");
-		IDialogSettings generalSection = settings.getSection("general");
+		IDialogSettings generalSection = settings.getSection(OptionSelectionWizardPage.getSettingsSectionName());
 		System.out.println("input file path: "
 				+ generalSection.get("inputFilePath"));
 		System.out.println("create vector map: "
@@ -113,12 +113,12 @@ public class GUIOsmosisLauncher {
 				+ generalSection.getBoolean("createPOIs"));
 
 		System.out.println("[POI settings]");
-		IDialogSettings poiSection = settings.getSection("poi");
+		IDialogSettings poiSection = settings.getSection(POIWizardPage.getSettingsSectionName());
 		System.out.println("category config path: "
 				+ poiSection.get("categoryConfigPath"));
 
 		System.out.println("[Map File Settings]");
-		IDialogSettings mapFileSection = settings.getSection("mapfile");
+		IDialogSettings mapFileSection = settings.getSection(MapFileWizardPage.getSettingsSectionName());
 		System.out.println("Map File path: "
 				+ mapFileSection.getBoolean("mapFilePath"));
 		System.out.println("Enable HDD cache: "
@@ -162,6 +162,8 @@ public class GUIOsmosisLauncher {
 				+ mapFileSection.getBoolean("BBEnlargement"));
 		System.out.println("Zoom interval configuration: "
 				+ mapFileSection.get("zoomIntervalConfiguration"));
+		
+		System.out.println("==============");
 
 	}
 }
