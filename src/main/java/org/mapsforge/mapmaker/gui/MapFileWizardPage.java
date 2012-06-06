@@ -108,7 +108,7 @@ public class MapFileWizardPage extends WizardPage {
 		if (this.settings.getSection(SETTINGS_SECTION_NAME) == null) {
 			System.out
 					.println("[WizardPage] (MapFile) Using default settings.");
-			this.settings.addSection(this.DEFAULT_SETTINGS);
+			this.settings.addSection(createDefaultSettings());
 		}
 
 		// Event listener for all checkboxes
@@ -587,11 +587,6 @@ public class MapFileWizardPage extends WizardPage {
 				.addModifyListener(this.textFieldModificationListener);
 	}
 
-	protected void setFilePath(String text, Text widget) {
-		// TODO Auto-generated method stub
-
-	}
-
 	/**
 	 * Reads last used values from settings object and sets form elements'
 	 * values accordingly.
@@ -600,10 +595,18 @@ public class MapFileWizardPage extends WizardPage {
 		System.out.println("[WizardPage] (MapFile) Applying setting values");
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
-
+		
+		// Output file path
+		if(section.get("mapFilePath") != null) {
+			this.tfOutputFilePath.setText(section.get("mapFilePath"));
+		} else {
+			this.tfOutputFilePath.setText(this.DEFAULT_SETTINGS.get("mapFilePath"));
+		}
+		
 		// Checkboxes
+		// TODO check if values have been set
 		this.chkEnableHDDCache.setSelection(section
-				.getBoolean("enableHHDCache"));
+				.getBoolean("enableHDDCache"));
 		this.chkEnableCustomStartPosition.setSelection(section
 				.getBoolean("enableCustomStartPosition"));
 		this.chkEnableCustomMapStartZoom.setSelection(section
@@ -621,6 +624,82 @@ public class MapFileWizardPage extends WizardPage {
 		this.chkEnableDebugFile.setSelection(section
 				.getBoolean("enableDebugFile"));
 
+		// Start position
+		if (section.getBoolean("enableCustomStartPosition")) {
+			if (section.get("startPositionLat") == null) {
+				this.tfMapStartLat.setText(this.DEFAULT_SETTINGS.get("startPositionLat"));
+			} else {
+				this.tfMapStartLat.setText(section.get("startPositionLat"));
+			}
+			if (section.get("startPositionLon") == null) {
+				this.tfMapStartLon.setText(this.DEFAULT_SETTINGS.get("startPositionLon"));
+			} else {
+				this.tfMapStartLon.setText(section.get("startPositionLon"));
+			}
+		}
+		
+		// Custom bounding box
+		if (section.getBoolean("enableCustomBB")) {
+			if(section.get("BBMinLat") != null) {
+				this.tfBBMinLat.setText(section.get("BBMinLat"));
+			} else {
+				this.tfBBMinLat.setText(this.DEFAULT_SETTINGS.get("BBMinLat"));
+			}
+			if(section.get("BBMaxLat") != null) {
+				this.tfBBMaxLat.setText(section.get("BBMaxLat"));
+			} else {
+				this.tfBBMaxLat.setText(this.DEFAULT_SETTINGS.get("BBMaxLat"));
+			}
+			if(section.get("BBMinLon") != null) {
+				this.tfBBMinLon.setText(section.get("BBMinLon"));
+			} else {
+				this.tfBBMinLon.setText(this.DEFAULT_SETTINGS.get("BBMinLon"));
+			}
+			if(section.get("BBMaxLon") != null) {
+				this.tfBBMaxLon.setText(section.get("BBMaxLon"));
+			} else {
+				this.tfBBMaxLon.setText(this.DEFAULT_SETTINGS.get("BBMaxLon"));
+			}
+		}
+
+		// Preferred language
+		if(section.get("preferredLanguage") != null) {
+			 this.tfPreferredLanguage.setText(section.get("preferredLanguage"));
+		} else {
+			this.tfPreferredLanguage.setText(this.DEFAULT_SETTINGS.get("preferredLanguage"));
+		}
+
+		// Comment
+		System.out.println("comment != null: " + (section.get("comment") != null));
+		if(section.get("comment") != null) {
+			this.tfComment.setText(section.get("comment"));
+			System.out.println("Changed text");
+		} else {
+			this.tfComment.setText(DEFAULT_SETTINGS.get("comment"));
+		}
+
+		// Tag configuration
+		if(section.get("tagConfigurationFilePath") != null) {
+			this.tfTagConfigurationFilePath.setText(section.get("tagConfigurationFilePath"));
+		} else {
+			this.tfTagConfigurationFilePath.setText(this.DEFAULT_SETTINGS.get("tagConfigurationFilePath"));
+		}
+		
+		// Simplification factor
+		if(section.get("simplificationFactor") != null) {
+			System.out.println("Simplification factor != null ");
+			this.inpSimplificationFactor.setSelection(section.getInt("simplificationFactor"));
+		} else {
+			this.inpSimplificationFactor.setSelection(this.DEFAULT_SETTINGS.getInt("simplificationFactor"));
+		}
+		
+		// BB enlargement
+		if(section.get("BBEnlargement") != null) {
+			this.inpBBEnlargement.setSelection(section.getInt("BBEnlargement"));
+		} else {
+			this.inpBBEnlargement.setSelection(this.DEFAULT_SETTINGS.getInt("BBEnlargement"));
+		}
+		
 		// Zoom interval configuration
 		// this.inpZoomIntervalConfiguration.setRedraw(false);
 		// new TableItem(this.inpZoomIntervalConfiguration, SWT.NONE)
@@ -687,11 +766,13 @@ public class MapFileWizardPage extends WizardPage {
 	}
 
 	private void updateSettings() {
+		System.out.println("[WizardPage] (MapFile) Updating settings");
+		
 		IDialogSettings section = this.settings
 				.getSection(SETTINGS_SECTION_NAME);
-
+		
 		// Output file path
-		// section.put("mapFilePath", this.tfOutputFilePath.getText());
+		section.put("mapFilePath", this.tfOutputFilePath.getText());
 
 		// Checkboxes
 		section.put("enableHDDCache", this.chkEnableHDDCache.getSelection());
@@ -723,8 +804,6 @@ public class MapFileWizardPage extends WizardPage {
 		}
 
 		if (section.getBoolean("enableCustomBB")) {
-			section.put("enableCustomBB",
-					this.chkEnableCustomBoundingBox.getSelection());
 			section.put("BBMinLat", this.tfBBMinLat.getText());
 			section.put("BBMaxLat", this.tfBBMaxLat.getText());
 			section.put("BBMinLon", this.tfBBMinLon.getText());
@@ -938,7 +1017,7 @@ public class MapFileWizardPage extends WizardPage {
 		section.put("mapFilePath", "");
 
 		// Checkboxes
-		section.put("enableHDDCache", false);
+		section.put("enableHDDCache", true);
 		section.put("enableCustomStartPosition", false);
 		section.put("enableCustomStartZoomLevel", false);
 		section.put("enableCustomBB", false);
@@ -990,10 +1069,10 @@ public class MapFileWizardPage extends WizardPage {
 	 *            The path to the file that contains OSM data to be converted.
 	 */
 	void updateFilePath(String inputFilePath) {
-		if(this.tfOutputFilePath == null) {
+		if (this.tfOutputFilePath == null) {
 			return;
 		}
-		
+
 		if (this.tfOutputFilePath.getText() == null
 				|| this.tfOutputFilePath.getText().equals("")) {
 			String mapFilePath = inputFilePath.split("(.osm|.osm.pbf)")[0]
