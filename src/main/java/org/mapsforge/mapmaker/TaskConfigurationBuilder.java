@@ -248,7 +248,8 @@ class TaskConfigurationBuilder {
 		case READ_XML:
 			return "rx";
 		case MAP_WRITER:
-			return "mw";
+			// XXX revert back to 'mw' when merging with trunk 
+			return "mw2";
 		case POI_WRITER:
 			return "poi-writer";
 		default:

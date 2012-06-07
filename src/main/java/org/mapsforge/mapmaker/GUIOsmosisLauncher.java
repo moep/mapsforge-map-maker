@@ -71,6 +71,7 @@ public class GUIOsmosisLauncher {
 				System.out.println("[OsmosisThread] # Tasks: "
 						+ builder.getTaskConfigurations().size());
 				ProgressManager pm = ProgressGUI.getInstance();
+				System.out.println("Progress manager (GUI): " + pm);
 
 				// Launch Osmosis
 				pm.start();

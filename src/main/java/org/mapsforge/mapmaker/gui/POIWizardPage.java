@@ -141,7 +141,6 @@ public class POIWizardPage extends WizardPage {
 	}
 
 	protected void setOutputFilePath(String path) {
-		System.out.println("Set output file path: " + path);
 		if (path != null && !path.equals(this.tfOutputFilePath.getText())) {
 			this.tfOutputFilePath.setText(path);
 		}
@@ -174,14 +173,13 @@ public class POIWizardPage extends WizardPage {
 		section.put("categoryConfigPath", this.tfCategoryConfigPath.getText());
 		// TODO create inputs for output file path
 		section.put("outputFilePath", this.tfOutputFilePath.getText());
-		System.out.println("Settings have been updated ");
 	}
 
 	@Override
 	public boolean isPageComplete() {
 		// Set page valid without any checks if this page is not used
 		if (this.settings.getSection(
-				POIWizardPage.getSettingsSectionName()).getBoolean(
+				OptionSelectionWizardPage.getSettingsSectionName()).getBoolean(
 				"createPOIs") == false) {
 			return true;
 		}
