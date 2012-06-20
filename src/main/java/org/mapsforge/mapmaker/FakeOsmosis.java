@@ -15,7 +15,7 @@ public class FakeOsmosis extends Thread {
 		System.out.println("Fake osmosis has been started");
 		
 		this.pm.initProgressBar(0, 0);
-		this.pm.sendMessage("Doing some preparations");
+		this.pm.setMessage("Doing some preparations");
 		System.out.println("Preparation phase");
 		try {
 			for (int i = 0; i <= 20; i++) {
@@ -29,7 +29,7 @@ public class FakeOsmosis extends Thread {
 		
 		
 		this.pm.initProgressBar(0, 150);
-		this.pm.sendMessage("Adding 150 items");
+		this.pm.setMessage("Adding 150 items");
 		System.out.println("Counting phase");
 		try {
 			for (int i = 0; i <= 150; i++) {

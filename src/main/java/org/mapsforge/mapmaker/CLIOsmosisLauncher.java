@@ -52,10 +52,11 @@ public class CLIOsmosisLauncher {
 	private static void createAndLaunchUsingTaskConfigurationBuilder() {
 		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
 		builder.createAndAddTask(TaskType.READ_BINARY,
-				"/home/moep/maps/berlin.osm.pbf");
-		builder.createAndAddTask(TaskType.POI_WRITER,
-				"/home/moep/maps/berlin.poi",
-				"categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
+				"/home/moep/maps/bremen.osm.pbf");
+		builder.createAndAddTask(TaskType.MAP_WRITER, "/home/moep/maps/bremen.map", "type=hd", "gui-mode=true");
+//		builder.createAndAddTask(TaskType.POI_WRITER,
+//				"/home/moep/maps/berlin.poi",
+//				"categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
 
 		final TaskRegistrar taskRegistrar = new TaskRegistrar();
 		taskRegistrar.initialize(new LinkedList<String>());
@@ -88,6 +89,7 @@ public class CLIOsmosisLauncher {
 		
 		gui.show(display);
 		try {
+			System.out.println("Waiting for GUI");
 			t.join();			
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();

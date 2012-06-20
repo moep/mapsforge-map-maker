@@ -62,7 +62,6 @@ public class GUIOsmosisLauncher {
 
 		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
 		builder.buildTaskConfigurationFromDialogSettings(settings);
-
 		new Thread(new Runnable() {
 
 			@Override
@@ -84,7 +83,9 @@ public class GUIOsmosisLauncher {
 				try {
 				pipeline.prepare(builder.getTaskConfigurations());
 				} catch (OutOfMemoryError e) {
-					// TODO Proper error report
+					pm.setMessage("***ERROR***");
+					pm.appendLogMessage(e.getMessage(), true);
+					pm.finish();
 					throw e;
 				}
 				System.out.println("[OsmosisThread] Starting pipeline");

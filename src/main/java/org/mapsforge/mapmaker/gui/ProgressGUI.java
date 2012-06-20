@@ -3,10 +3,14 @@ package org.mapsforge.mapmaker.gui;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -18,19 +22,27 @@ import org.eclipse.swt.widgets.Shell;
 import org.mapsforge.mapmaker.logging.ProgressManager;
 
 public class ProgressGUI implements ProgressManager {
-    private static ProgressGUI instance;
-    private boolean isInitialized = false;
-    private boolean isFinished = false;
+	private static ProgressGUI instance;
+	private boolean isInitialized = false;
+	private boolean isFinished = false;
 
-	final int PADDING = 4;
+	private final static int PADDING = 4;
+	private final static String NL = "\r\n";
 
 	private Shell shell;
 	private Display display;
 
 	private ProgressBar progressBar;
-	protected CLabel lblStatusText;
+	private CLabel lblStatusText;
+	private StyledText log;
+	private FormData fd_log;
 	private Button btnOK;
 	private Button btnCancel;
+
+	private int logCharacterCount = 0;
+
+	// DON'T CHANGE THIS VARIABLE (consider it being final)
+	private Color ERROR_COLOR;
 
 	private ProgressGUI() {
 	}
@@ -47,7 +59,7 @@ public class ProgressGUI implements ProgressManager {
 		this.display = display;
 		this.shell.setText("m³ - mapsforge map maker");
 
-		shell.addShellListener(new ShellAdapter() {
+		this.shell.addShellListener(new ShellAdapter() {
 			@Override
 			public void shellClosed(ShellEvent e) {
 
@@ -55,8 +67,7 @@ public class ProgressGUI implements ProgressManager {
 
 				// Promt quit if the worker thread has not finished yet
 				if (!ProgressGUI.this.isFinished) {
-					doExit = MessageDialog.openConfirm(ProgressGUI.this.shell,
-							"Cancel action?",
+					doExit = MessageDialog.openConfirm(ProgressGUI.this.shell, "Cancel action?",
 							"Do you really want to abort this action?");
 				}
 
@@ -64,14 +75,14 @@ public class ProgressGUI implements ProgressManager {
 			}
 		});
 
-		shell.setSize(400, 150);
-		shell.setLocation(300, 300);
+		this.shell.setSize(400, 150);
+		this.shell.setLocation(300, 300);
 		initUI();
-		shell.pack();
+		this.shell.pack();
 
-		shell.open();
+		this.shell.open();
 
-		while (!shell.isDisposed()) {
+		while (!this.shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
 			}
@@ -96,42 +107,45 @@ public class ProgressGUI implements ProgressManager {
 		// STATUS TEXT
 		this.lblStatusText = new CLabel(this.shell, SWT.WRAP);
 		this.lblStatusText.setText("Waiting for plugin");
-		Point labelSize = this.lblStatusText.computeSize(SWT.DEFAULT,
-				SWT.DEFAULT);
-		final FormData labelLayout = new FormData(labelSize.x, SWT.DEFAULT);
-		labelLayout.left = new FormAttachment(0, PADDING);
-		labelLayout.right = new FormAttachment(100, -PADDING);
-		this.lblStatusText.setLayoutData(labelLayout);
+		Point labelSize = this.lblStatusText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		final FormData fd_lblStatusText = new FormData(labelSize.x, SWT.DEFAULT);
+		fd_lblStatusText.left = new FormAttachment(0, PADDING);
+		fd_lblStatusText.right = new FormAttachment(100, -PADDING);
+		this.lblStatusText.setLayoutData(fd_lblStatusText);
+
+		// PROGRESS BAR
+		this.progressBar = new ProgressBar(this.shell, SWT.HORIZONTAL);
+		FormData fd_progressBar = new FormData(ProgressGUI.this.shell.getSize().x - 2 * PADDING, SWT.DEFAULT);
+		fd_progressBar.top = new FormAttachment(ProgressGUI.this.lblStatusText, PADDING);
+		fd_progressBar.left = new FormAttachment(0, PADDING);
+		fd_progressBar.right = new FormAttachment(100, -PADDING);
+		ProgressGUI.this.progressBar.setLayoutData(fd_progressBar);
+
+		log = new StyledText(this.shell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.MULTI);
+		this.fd_log = new FormData(SWT.DEFAULT, 50);
+		this.fd_log.top = new FormAttachment(this.progressBar, PADDING);
+		this.fd_log.left = new FormAttachment(0, PADDING);
+		this.fd_log.right = new FormAttachment(100, -PADDING);
+		log.setLayoutData(this.fd_log);
+		log.setEditable(false);
 
 		// CANCEL BUTTON
 		this.btnCancel = new Button(this.shell, SWT.PUSH);
+		this.fd_log.bottom = new FormAttachment(this.btnCancel, -PADDING);
+		FormData fd_btnCancel = new FormData(100, SWT.DEFAULT);
+		fd_btnCancel.right = new FormAttachment(100, -PADDING);
+		fd_btnCancel.bottom = new FormAttachment(100, -PADDING);
+		this.btnCancel.setLayoutData(fd_btnCancel);
 		this.btnCancel.setText("Cancel");
-		FormData cancelButtonLayout = new FormData(100, SWT.DEFAULT);
-		cancelButtonLayout.right = new FormAttachment(100, -PADDING);
-		cancelButtonLayout.bottom = new FormAttachment(100, -PADDING);
-		btnCancel.setLayoutData(cancelButtonLayout);
 
 		// OK BUTTON
 		this.btnOK = new Button(this.shell, SWT.PUSH);
+		FormData okButtonLayout = new FormData(100, SWT.DEFAULT);
+		okButtonLayout.right = new FormAttachment(this.btnCancel, -PADDING);
+		okButtonLayout.bottom = new FormAttachment(100, -PADDING);
+		this.btnOK.setLayoutData(okButtonLayout);
 		this.btnOK.setText("OK");
 		this.btnOK.setEnabled(false);
-		FormData okButtonLayout = new FormData(100, SWT.DEFAULT);
-		okButtonLayout.right = new FormAttachment(btnCancel, -PADDING);
-		okButtonLayout.bottom = new FormAttachment(100, -PADDING);
-		btnOK.setLayoutData(okButtonLayout);
-
-		// PROGRESS BAR
-		ProgressGUI.this.progressBar = new ProgressBar(this.shell,
-				SWT.HORIZONTAL);
-		FormData progressBarLayout = new FormData(
-				ProgressGUI.this.shell.getSize().x - 2 * PADDING, SWT.DEFAULT);
-		progressBarLayout.top = new FormAttachment(
-				ProgressGUI.this.lblStatusText, PADDING);
-		progressBarLayout.left = new FormAttachment(0, PADDING);
-		progressBarLayout.right = new FormAttachment(100, -PADDING);
-		progressBarLayout.bottom = new FormAttachment(ProgressGUI.this.btnOK,
-				-PADDING);
-		ProgressGUI.this.progressBar.setLayoutData(progressBarLayout);
 
 		// RESIZE ACTIONS
 		// this.shell.addListener(SWT.RESIZE, new Listener() {
@@ -160,11 +174,13 @@ public class ProgressGUI implements ProgressManager {
 			System.out.println("[GUI] ready");
 		}
 
+		// COLORS AND FONTS
+		this.ERROR_COLOR = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+		this.log.setFont(new Font(Display.getCurrent(), "Monospace", 10, SWT.NORMAL));
 	}
 
 	@Override
-	public void sendMessage(final String message) {
-		System.out.println("Message: " + message);
+	public void setMessage(final String message) {
 		if (this.display != null && !this.shell.isDisposed()) {
 			this.display.asyncExec(new Runnable() {
 
@@ -179,15 +195,40 @@ public class ProgressGUI implements ProgressManager {
 	}
 
 	@Override
+	public void appendLogMessage(final String message, final boolean isErrorMessage) {
+
+		final StyleRange style = new StyleRange();
+		style.start = this.logCharacterCount;
+		style.length = message.length();
+		if (isErrorMessage) {
+			style.foreground = this.ERROR_COLOR;
+		}
+
+		this.logCharacterCount += message.length() + NL.length();
+
+		if (this.display != null && !this.shell.isDisposed()) {
+			this.display.asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					synchronized (ProgressGUI.this.log) {
+						ProgressGUI.this.log.append(message + NL);
+						ProgressGUI.this.log.setStyleRange(style);
+					}
+				}
+
+			});
+		}
+	}
+
+	@Override
 	public void tick() {
 		if (this.display != null && !this.shell.isDisposed()) {
 			this.display.asyncExec(new Runnable() {
 
 				@Override
 				public void run() {
-					ProgressGUI.this.progressBar
-							.setSelection(ProgressGUI.this.progressBar
-									.getSelection() + 1);
+					ProgressGUI.this.progressBar.setSelection(ProgressGUI.this.progressBar.getSelection() + 1);
 
 				}
 
@@ -203,17 +244,12 @@ public class ProgressGUI implements ProgressManager {
 				@Override
 				public void run() {
 
-					boolean isInIndeterminateMode = ProgressGUI.this.progressBar != null
-							&& ProgressGUI.this.progressBar.getMinimum() == 0
-							&& ProgressGUI.this.progressBar.getMaximum() == 0;
-
 					if (minVal == 0 && maxVal == 0) {
 						System.out.println("[GUI] creating indeterminate bar");
-						createOrReplaceProgressBar(SWT.HORIZONTAL
-								| SWT.INDETERMINATE);
+						ProgressGUI.this.createOrReplaceProgressBar(SWT.HORIZONTAL | SWT.INDETERMINATE);
 					} else {
 						System.out.println("[GUI] creating determinate bar");
-						createOrReplaceProgressBar(SWT.HORIZONTAL);
+						ProgressGUI.this.createOrReplaceProgressBar(SWT.HORIZONTAL);
 						ProgressGUI.this.progressBar.setMinimum(minVal);
 						ProgressGUI.this.progressBar.setMaximum(maxVal);
 					}
@@ -229,17 +265,16 @@ public class ProgressGUI implements ProgressManager {
 			ProgressGUI.this.progressBar.dispose();
 		}
 
-		ProgressGUI.this.progressBar = new ProgressBar(this.shell, mode);
-		FormData progressBarLayout = new FormData(
-				ProgressGUI.this.shell.getSize().x - 2 * PADDING, SWT.DEFAULT);
-		progressBarLayout.top = new FormAttachment(
-				ProgressGUI.this.lblStatusText, PADDING);
-		progressBarLayout.left = new FormAttachment(0, PADDING);
-		progressBarLayout.right = new FormAttachment(100, -PADDING);
-		progressBarLayout.bottom = new FormAttachment(ProgressGUI.this.btnOK,
-				-PADDING);
-		ProgressGUI.this.progressBar.setLayoutData(progressBarLayout);
-		ProgressGUI.this.shell.pack();
+		this.progressBar = new ProgressBar(this.shell, mode);
+		FormData fd_progressBar = new FormData(ProgressGUI.this.shell.getSize().x - 2 * this.PADDING, SWT.DEFAULT);
+		fd_progressBar.top = new FormAttachment(ProgressGUI.this.lblStatusText, PADDING);
+		fd_progressBar.left = new FormAttachment(0, PADDING);
+		fd_progressBar.right = new FormAttachment(100, -PADDING);
+
+		this.fd_log.top = new FormAttachment(this.progressBar, PADDING);
+
+		ProgressGUI.this.progressBar.setLayoutData(fd_progressBar);
+		ProgressGUI.this.shell.layout(true);
 
 	}
 

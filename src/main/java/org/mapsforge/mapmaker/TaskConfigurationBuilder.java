@@ -28,7 +28,6 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskConfiguration;
 class TaskConfigurationBuilder {
 	private LinkedList<TaskConfiguration> taskConfigurations;
 	private static final Map<String, String> EMPTY_PIPE_ARGS = new HashMap<String, String>();
-	
 
 	static enum TaskType {
 		READ_BINARY, READ_XML, MAP_WRITER, POI_WRITER;
@@ -211,9 +210,8 @@ class TaskConfigurationBuilder {
 							+ mapFileSection.getInt("BBEnlargement"),
 					"zoom-interval-conf="
 							+ mapFileSection.get("zoomIntervalConfiguration"),
-					"debug-file=" + mapFileSection.get("enableDebugFile"));
-
-			// TODO add gui-mode=true as parameter (hook Osmosis plugin first)
+					"debug-file=" + mapFileSection.get("enableDebugFile"),
+					"gui-mode=true");
 
 			// optional parameters
 			if (mapFileSection.getBoolean("enableCustomStartPosition")) {
@@ -248,7 +246,7 @@ class TaskConfigurationBuilder {
 		case READ_XML:
 			return "rx";
 		case MAP_WRITER:
-			// XXX revert back to 'mw' when merging with trunk 
+			// XXX revert back to 'mw' when merging with trunk
 			return "mw2";
 		case POI_WRITER:
 			return "poi-writer";

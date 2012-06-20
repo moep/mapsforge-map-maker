@@ -22,9 +22,15 @@ package org.mapsforge.mapmaker.logging;
 public class DummyProgressManager implements ProgressManager {
 
 	@Override
-	public void sendMessage(String message) {
+	public void setMessage(String message) {
 		// empty by purpose
 
+	}
+
+	@Override
+	public void appendLogMessage(String message, boolean isErrorMessage) {
+		// empty by purpose
+		
 	}
 
 	@Override

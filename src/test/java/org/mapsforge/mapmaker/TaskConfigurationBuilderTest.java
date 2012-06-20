@@ -90,7 +90,8 @@ public class TaskConfigurationBuilderTest {
 		assertEquals("tee", taskConfigurations.get(1).getType());
 
 		// mapfile-writer
-		assertEquals("mw", taskConfigurations.get(2).getType());
+		// XXX revert back to "mw" when merging with trunk
+		assertEquals("mw2", taskConfigurations.get(2).getType());
 		assertEquals(null, taskConfigurations.get(2).getDefaultArg());
 		assertEquals(MAP_FILE_PATH, taskConfigurations.get(2).getConfigArgs()
 				.get("file"));
@@ -123,7 +124,8 @@ public class TaskConfigurationBuilderTest {
 		assertEquals(2, taskConfigurations.size());
 
 		// mapfile-writer
-		assertEquals("mw", taskConfigurations.get(1).getType());
+		// XXX revert back to "mw" when merging with trunk
+		assertEquals("mw2", taskConfigurations.get(1).getType());
 		assertEquals(null, taskConfigurations.get(1).getDefaultArg());
 		assertEquals(MAP_FILE_PATH, taskConfigurations.get(1).getConfigArgs()
 				.get("file"));
@@ -273,7 +275,8 @@ public class TaskConfigurationBuilderTest {
 		String defaultArg = mfwConfig.getDefaultArg();
 
 		// Check task type
-		assertEquals("mw", mfwConfig.getType());
+		// XXX revert back to "mw" when merging with trunk
+		assertEquals("mw2", mfwConfig.getType());
 
 		// Output file path is defined as default parameter
 		if (defaultArg != null) {
