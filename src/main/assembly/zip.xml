@@ -1,0 +1,46 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+	<id>bin</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	
+	<!-- Include system libraries -->
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>lib/</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<scope>system</scope>
+		</dependencySet>
+	</dependencySets>
+	
+	<fileSets>
+		
+		<!-- <fileSet>
+		
+			<directory>${project.basedir}/src/main/resources</directory>
+			<outputDirectory />
+		</fileSet> -->
+		
+		
+		<fileSet>
+			<directory>${project.build.directory}</directory>
+			<outputDirectory />
+			<includes>
+				<include>*-final.jar</include>
+			</includes>
+		</fileSet>
+		
+		<!-- Images and default config -->
+		<fileSet>
+			<directory>${basedir}</directory>
+			<includes>
+				<include>*.png</include>
+				<include>POICategoriesOsmosis.xml</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

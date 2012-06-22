@@ -16,7 +16,6 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskConfiguration;
 
 /**
  * Hello world!
- * 
  */
 public class CLIOsmosisLauncher {
 	// --rb /home/moep/maps/berlin.osm.pbf --tee --mw
@@ -51,29 +50,27 @@ public class CLIOsmosisLauncher {
 
 	private static void createAndLaunchUsingTaskConfigurationBuilder() {
 		final TaskConfigurationBuilder builder = new TaskConfigurationBuilder();
-		builder.createAndAddTask(TaskType.READ_BINARY,
-				"/home/moep/maps/bremen.osm.pbf");
+		builder.createAndAddTask(TaskType.READ_BINARY, "/home/moep/maps/bremen.osm.pbf");
 		builder.createAndAddTask(TaskType.MAP_WRITER, "/home/moep/maps/bremen.map", "type=hd", "gui-mode=true");
-//		builder.createAndAddTask(TaskType.POI_WRITER,
-//				"/home/moep/maps/berlin.poi",
-//				"categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
+		// builder.createAndAddTask(TaskType.POI_WRITER,
+		// "/home/moep/maps/berlin.poi",
+		// "categoryConfigPath=POICategoriesOsmosis.xml", "gui-mode=true");
 
 		final TaskRegistrar taskRegistrar = new TaskRegistrar();
 		taskRegistrar.initialize(new LinkedList<String>());
 
 		final ProgressGUI gui = ProgressGUI.getInstance();
 		final Display display = new Display();
-		
+
 		// Start Osmosis
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				ProgressManager pm = ProgressGUI.getInstance();
-				
-				
+
 				pm.start();
-				System.out.println("Starting pipeline");				
+				System.out.println("Starting pipeline");
 				Pipeline pipeline = new Pipeline(taskRegistrar.getFactoryRegister());
 				System.out.println("Preparing pipeline");
 				pipeline.prepare(builder.getTaskConfigurations());
@@ -83,18 +80,18 @@ public class CLIOsmosisLauncher {
 				pipeline.waitForCompletion();
 				pm.finish();
 			}
-			
+
 		});
 		t.start();
-		
+
 		gui.show(display);
 		try {
 			System.out.println("Waiting for GUI");
-			t.join();			
+			t.join();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-		
+
 		System.out.println("Nothing to do here");
 
 	}
@@ -103,11 +100,11 @@ public class CLIOsmosisLauncher {
 		Map<String, String> configArgs = new HashMap<String, String>();
 		Map<String, String> pipeArgs = new HashMap<String, String>();
 
-		TaskConfiguration readTask = new TaskConfiguration("1-rb", "rb",
-				configArgs, pipeArgs, "/home/moep/maps/berlin.osm.pbf");
+		TaskConfiguration readTask = new TaskConfiguration("1-rb", "rb", configArgs, pipeArgs,
+				"/home/moep/maps/berlin.osm.pbf");
 		TaskConfiguration teeTask;
-		TaskConfiguration writePOITask = new TaskConfiguration("2-poi-writer",
-				"poi-writer", configArgs, pipeArgs, "/home/moep/maps/test.poi");
+		TaskConfiguration writePOITask = new TaskConfiguration("2-poi-writer", "poi-writer", configArgs, pipeArgs,
+				"/home/moep/maps/test.poi");
 		LinkedList<TaskConfiguration> taskList = new LinkedList<TaskConfiguration>();
 		taskList.add(readTask);
 		taskList.add(writePOITask);
@@ -134,13 +131,11 @@ public class CLIOsmosisLauncher {
 			System.out.println("  Default arg: " + t.getDefaultArg());
 			System.out.println("  Config args: ");
 			for (String key : t.getConfigArgs().keySet()) {
-				System.out.println("   [*] " + key + "="
-						+ t.getConfigArgs().get(key));
+				System.out.println("   [*] " + key + "=" + t.getConfigArgs().get(key));
 			}
 			System.out.println("  Pipe args: ");
 			for (String key : t.getPipeArgs().keySet()) {
-				System.out.println("   [*] " + key + "="
-						+ t.getPipeArgs().get(key));
+				System.out.println("   [*] " + key + "=" + t.getPipeArgs().get(key));
 			}
 		}
 

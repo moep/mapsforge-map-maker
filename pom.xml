@@ -24,21 +24,27 @@
 
 	<build>
 		<plugins>
+
+			<!-- Creates a distributable archive -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>org.mapsforge.mapmaker.CLIOsmosisLauncher</mainClass>
+						</manifest>
+					</archive>
+					<!-- <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+						</descriptorRefs> -->
+					<descriptors>
+						<descriptor>src/main/assembly/jar.xml</descriptor>
+						<descriptor>src/main/assembly/zip.xml</descriptor>
+					</descriptors>
 				</configuration>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
 						<phase>package</phase>
-						<configuration>
-							<echo message="     [*] Creating fat jar file" />
-						</configuration>
 						<goals>
 							<goal>single</goal>
 						</goals>
@@ -46,27 +52,12 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>copy-jar</id>
-						<phase>install</phase>
-						<configuration>
-							<target>
-								<echo message="     [*] Creating jar file" />
-								<!-- <copy overwrite="true" file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar" 
-									todir="${osmosis.plugin.dir}" /> -->
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-jar-plugin</artifactId> 
+				<configuration> <archive> <manifest> <mainClass>org.mapsforge.mapmaker.GUIOsmosisLauncher</mainClass> 
+				<packageName>com.someclass</packageName> </manifest> <manifestEntries> <mode>development</mode> 
+				<url>${pom.url}</url> </manifestEntries> </archive> </configuration> </plugin> -->
+
 		</plugins>
 	</build>
 
@@ -171,6 +162,17 @@
 			<groupId>org.eclipse.swt.gtk.linux</groupId>
 			<artifactId>x86_64</artifactId>
 			<version>3.3.0-v3346</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 
