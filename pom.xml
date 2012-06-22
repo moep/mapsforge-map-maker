@@ -16,6 +16,7 @@
 	<artifactId>mapsforge-map-maker</artifactId>
 	<packaging>jar</packaging>
 	<name>mapsforge-map-maker</name>
+	<version>0.1.0</version>
 	<description>A GUI for easy creation of mapsforge data.</description>
 
 	<properties>
@@ -31,11 +32,12 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.mapsforge.mapmaker.CLIOsmosisLauncher</mainClass>
+							<!-- Main class and version information -->
+							<mainClass>org.mapsforge.mapmaker.GUIOsmosisLauncher</mainClass>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
 					</archive>
-					<!-- <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
-						</descriptorRefs> -->
 					<descriptors>
 						<descriptor>src/main/assembly/jar.xml</descriptor>
 						<descriptor>src/main/assembly/zip.xml</descriptor>
@@ -118,8 +120,7 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!-- Osmosis dependencies -->
-
+		<!-- Osmosis dependencies needed for running from within an IDE -->
 		<dependency>
 			<groupId>osmosis</groupId>
 			<artifactId>osmosis-core</artifactId>
@@ -144,7 +145,7 @@
 		<dependency>
 			<groupId>crosby</groupId>
 			<artifactId>osmpbf</artifactId>
-			<version>0.40.1</version>
+			<version>1.1.1-754a33af</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/osmosis/osmpbf-1.1.1-754a33af.jar</systemPath>
 		</dependency>

@@ -1,0 +1,18 @@
+m³ - mapsforge map maker change log
+
+Contents
+========
+1: Change Log
+2: TODO List
+
+1: Change Log
+-------------
+
+v0.1 (06-22-2012)
+  * Internal release
+
+2: TODO List
+------------
+
+  * Add Osmosis plugins to distribution and ignore installed Osmosis plugins
+	* Find a way to shrink the main window 

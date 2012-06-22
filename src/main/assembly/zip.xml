@@ -2,45 +2,72 @@
 	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-	<id>bin</id>
+	<id>distrib</id>
 	<formats>
 		<format>zip</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
-	
-	<!-- Include system libraries -->
+
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>lib/</outputDirectory>
-			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>false</unpack>
 			<scope>system</scope>
+			<useProjectArtifact>false</useProjectArtifact>
+			<outputDirectory>lib</outputDirectory>
+			<excludes>
+				<exclude>osmosis:osmosis-core</exclude>
+			</excludes>
 		</dependencySet>
 	</dependencySets>
-	
+
+	<files>
+		<!-- Main jar file -->
+		<file>
+			<source>${project.build.directory}/${project.artifactId}-${project.version}-final.jar</source>
+			<outputDirectory>/</outputDirectory>
+			<destName>mapsforge-map-maker.jar</destName>
+		</file>
+		
+		<!-- POICategoriesOsmosis.xml -->
+		<file>
+			<source>src/main/resources/POICategoriesOsmosis.xml</source>
+			<outputDirectory>/</outputDirectory>			
+		</file>
+		
+		<!-- Run script (Linux) -->
+		<file>
+			<source>src/main/resources/mapmaker.sh</source>
+			<outputDirectory>/</outputDirectory>
+			<fileMode>0744</fileMode>			
+		</file>
+	</files>
+
 	<fileSets>
-		
-		<!-- <fileSet>
-		
-			<directory>${project.basedir}/src/main/resources</directory>
-			<outputDirectory />
-		</fileSet> -->
-		
-		
+		<!-- Osmosis plugins -->
 		<fileSet>
-			<directory>${project.build.directory}</directory>
-			<outputDirectory />
-			<includes>
-				<include>*-final.jar</include>
-			</includes>
+			<directory>${project.build.directory}/lib/osmosis</directory>
+			<outputDirectory>lib</outputDirectory>
+			<excludes>
+				<exclude>*.txt</exclude>
+			</excludes>
 		</fileSet>
-		
-		<!-- Images and default config -->
+
+		<!-- Images -->
 		<fileSet>
 			<directory>${basedir}</directory>
 			<includes>
 				<include>*.png</include>
-				<include>POICategoriesOsmosis.xml</include>
 			</includes>
+		</fileSet>
+		
+		<!-- COPYING(.LESSER) -->
+		<fileSet>
+			<directory>src/main/resources/</directory>
+			<includes>
+				<include>COPYING*</include>
+				<include>changelog.txt</include>
+			</includes>
+			<outputDirectory>/</outputDirectory>
 		</fileSet>
 	</fileSets>
 </assembly>

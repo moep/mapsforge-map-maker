@@ -13,14 +13,17 @@
 			<scope>runtime</scope>
 			<useProjectArtifact>false</useProjectArtifact>
 		</dependencySet>
-		<!-- Add libraries with system scope, too -->
+		<!-- Add Osmosis library (having system scope), too -->
 		<dependencySet>
 			<unpack>true</unpack>
 			<scope>system</scope>
 			<useProjectArtifact>false</useProjectArtifact>
+			<includes>
+				<include>osmosis:osmosis-core</include>
+			</includes>
 		</dependencySet>
 	</dependencySets>
-	
+
 	<fileSets>
 		<fileSet>
 			<directory>${project.build.outputDirectory}</directory>
