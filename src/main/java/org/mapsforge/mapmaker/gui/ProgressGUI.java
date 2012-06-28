@@ -100,7 +100,7 @@ public class ProgressGUI implements ProgressManager {
 		}
 	}
 
-	public void initUI() {
+	private void initUI() {
 		FormLayout layout = new FormLayout();
 		this.shell.setLayout(layout);
 
@@ -121,13 +121,13 @@ public class ProgressGUI implements ProgressManager {
 		fd_progressBar.right = new FormAttachment(100, -PADDING);
 		ProgressGUI.this.progressBar.setLayoutData(fd_progressBar);
 
-		log = new StyledText(this.shell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.MULTI);
+		this.log = new StyledText(this.shell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.MULTI);
 		this.fd_log = new FormData(SWT.DEFAULT, 50);
 		this.fd_log.top = new FormAttachment(this.progressBar, PADDING);
 		this.fd_log.left = new FormAttachment(0, PADDING);
 		this.fd_log.right = new FormAttachment(100, -PADDING);
-		log.setLayoutData(this.fd_log);
-		log.setEditable(false);
+		this.log.setLayoutData(this.fd_log);
+		this.log.setEditable(false);
 
 		// CANCEL BUTTON
 		this.btnCancel = new Button(this.shell, SWT.PUSH);
@@ -163,6 +163,12 @@ public class ProgressGUI implements ProgressManager {
 			public void widgetSelected(SelectionEvent event) {
 				ProgressGUI.this.shell.close();
 				ProgressGUI.this.shell.dispose();
+			}
+		});
+
+		this.btnCancel.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				ProgressGUI.this.shell.close();
 			}
 		});
 

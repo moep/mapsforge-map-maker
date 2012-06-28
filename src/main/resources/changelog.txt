@@ -13,6 +13,7 @@ v0.1 (06-22-2012)
 
 2: TODO List
 ------------
-
-  * Add Osmosis plugins to distribution and ignore installed Osmosis plugins
-	* Find a way to shrink the main window 
+	* Fix GUI freeze when clicking on OK / Cancel after the conversion process has ended / failed.
+	* Provide more detailed progress information for map generation.
+  * Find a better way to add mapsforge's Osmosis plugins to the distribution archive.
+	* Find a way to shrink the main window.

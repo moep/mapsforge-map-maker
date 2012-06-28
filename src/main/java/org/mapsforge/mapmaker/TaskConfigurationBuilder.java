@@ -34,8 +34,7 @@ class TaskConfigurationBuilder {
 	}
 
 	/**
-	 * This multiplicator transforms a raw spinner value (stored as int) to its
-	 * float representation.
+	 * This multiplicator transforms a raw spinner value (stored as int) to its float representation.
 	 */
 	static final float SIMPLIFICATION_FACTOR_MULTIPLICATOR = 0.01f;
 
@@ -47,7 +46,6 @@ class TaskConfigurationBuilder {
 	}
 
 	/**
-	 * 
 	 * @return All generated task configurations.
 	 */
 	List<TaskConfiguration> getTaskConfigurations() {
@@ -60,8 +58,7 @@ class TaskConfigurationBuilder {
 	 * @param taskType
 	 *            See {@link TaskType}.
 	 * @param params
-	 *            Array of text parameters as they were used by a command line
-	 *            call.
+	 *            Array of text parameters as they were used by a command line call.
 	 */
 	void createAndAddTask(TaskType taskType, String... params) {
 		// First task must be a source task
@@ -90,28 +87,23 @@ class TaskConfigurationBuilder {
 			}
 		}
 
-		TaskConfiguration config = new TaskConfiguration(id, type,
-				EMPTY_PIPE_ARGS, configArgs, defaultArg);
+		TaskConfiguration config = new TaskConfiguration(id, type, EMPTY_PIPE_ARGS, configArgs, defaultArg);
 		this.taskConfigurations.add(config);
 	}
 
 	/**
-	 * Adds parameters to the last task constructed {@link Byte}
-	 * {@link #createAndAddTask(TaskType, String...)}.
+	 * Adds parameters to the last task constructed {@link Byte} {@link #createAndAddTask(TaskType, String...)}.
 	 * 
 	 * @param parameters
-	 *            Array of text parameters (key=value) as they were used by a
-	 *            command line call.
+	 *            Array of text parameters (key=value) as they were used by a command line call.
 	 */
 	void appendParametersToLastAddedTask(String... parameters) {
 		TaskConfiguration config = this.taskConfigurations.getLast();
 
 		// Create a new task configuration as the current configurations's
 		// values cannot be changed
-		Map<String, String> configArgs = new HashMap<String, String>(
-				config.getConfigArgs());
-		Map<String, String> pipeArgs = new HashMap<String, String>(
-				config.getPipeArgs());
+		Map<String, String> configArgs = new HashMap<String, String>(config.getConfigArgs());
+		Map<String, String> pipeArgs = new HashMap<String, String>(config.getPipeArgs());
 		String defaultArg = config.getDefaultArg();
 		String id = config.getId();
 		String type = config.getType();
@@ -128,8 +120,7 @@ class TaskConfigurationBuilder {
 		}
 
 		// Replace config with an updated one
-		TaskConfiguration configNew = new TaskConfiguration(id, type, pipeArgs,
-				configArgs, defaultArg);
+		TaskConfiguration configNew = new TaskConfiguration(id, type, pipeArgs, configArgs, defaultArg);
 		this.taskConfigurations.removeLast();
 		this.taskConfigurations.add(configNew);
 	}
@@ -138,25 +129,20 @@ class TaskConfigurationBuilder {
 	 * Inserts a tee task if more than one writer task exist.
 	 */
 	private void createAndInsertTeeTask() {
-		this.taskConfigurations.add(1, new TaskConfiguration("2-tee", "tee",
-				EMPTY_PIPE_ARGS, EMPTY_PIPE_ARGS, null));
+		this.taskConfigurations.add(1, new TaskConfiguration("2-tee", "tee", EMPTY_PIPE_ARGS, EMPTY_PIPE_ARGS, null));
 	}
 
 	/**
-	 * Reads a configuration created by a GUI and stored in an
-	 * {@link IDialogSettings} object and creates matching
+	 * Reads a configuration created by a GUI and stored in an {@link IDialogSettings} object and creates matching
 	 * {@link TaskConfiguration}s out of it.
 	 * 
 	 * @param settings
 	 *            Serialized GUI input.
 	 */
 	void buildTaskConfigurationFromDialogSettings(IDialogSettings settings) {
-		IDialogSettings generalSection = settings
-				.getSection(OptionSelectionWizardPage.getSettingsSectionName());
-		IDialogSettings poiSection = settings.getSection(POIWizardPage
-				.getSettingsSectionName());
-		IDialogSettings mapFileSection = settings.getSection(MapFileWizardPage
-				.getSettingsSectionName());
+		IDialogSettings generalSection = settings.getSection(OptionSelectionWizardPage.getSettingsSectionName());
+		IDialogSettings poiSection = settings.getSection(POIWizardPage.getSettingsSectionName());
+		IDialogSettings mapFileSection = settings.getSection(MapFileWizardPage.getSettingsSectionName());
 
 		boolean createPOIs = generalSection.getBoolean("createPOIs");
 		boolean createMapFile = generalSection.getBoolean("createVectorMap");
@@ -177,81 +163,74 @@ class TaskConfigurationBuilder {
 		if (createPOIs) {
 			String categoryConfigPath = poiSection.get("categoryConfigPath");
 			String outputFilePath = poiSection.get("outputFilePath");
-			createAndAddTask(TaskType.POI_WRITER, outputFilePath,
-					"categoryConfigPath=" + categoryConfigPath, "gui-mode=true");
+			createAndAddTask(TaskType.POI_WRITER, outputFilePath, "categoryConfigPath=" + categoryConfigPath,
+					"gui-mode=true");
 		}
 
 		// MAP FILE TASK
 		if (createMapFile) {
-			createAndAddTask(
-					TaskType.MAP_WRITER,
-					mapFileSection.get("mapFilePath"),
-					"type="
-							+ (mapFileSection.getBoolean("enableHDDCache") ? "hd"
-									: "ram"),
-					"bbox=" + mapFileSection.get("BBMinLat") + ","
-							+ mapFileSection.get("BBMinLon") + ","
-							+ mapFileSection.get("BBMaxLat") + ","
-							+ mapFileSection.get("BBMaxLon"),
-					"preferred-language="
+			createAndAddTask(TaskType.MAP_WRITER, mapFileSection.get("mapFilePath"),
+					"type=" + (mapFileSection.getBoolean("enableHDDCache") ? "hd" : "ram"), "preferred-language="
 							+ mapFileSection.get("preferredLanguage"),
-					"polygon-clipping="
-							+ mapFileSection
-									.getBoolean("enablePolygonClipping"),
-					"way-clipping="
+					"polygon-clipping=" + mapFileSection.getBoolean("enablePolygonClipping"), "way-clipping="
 							+ mapFileSection.getBoolean("enableWayClipping"),
-					"label-position="
-							+ mapFileSection
-									.getBoolean("computeLabelPositions"),
-					"simplification-factor="
-							+ mapFileSection.getInt("simplificationFactor")
-							* SIMPLIFICATION_FACTOR_MULTIPLICATOR,
-					"bbox-enlargement="
-							+ mapFileSection.getInt("BBEnlargement"),
-					"zoom-interval-conf="
+					"label-position=" + mapFileSection.getBoolean("computeLabelPositions"), "simplification-factor="
+							+ mapFileSection.getInt("simplificationFactor") * SIMPLIFICATION_FACTOR_MULTIPLICATOR,
+					"bbox-enlargement=" + mapFileSection.getInt("BBEnlargement"), "zoom-interval-conf="
 							+ mapFileSection.get("zoomIntervalConfiguration"),
-					"debug-file=" + mapFileSection.get("enableDebugFile"),
-					"gui-mode=true");
+					"debug-file=" + mapFileSection.get("enableDebugFile"), "gui-mode=true");
 
 			// optional parameters
 			if (mapFileSection.getBoolean("enableCustomStartPosition")) {
-				appendParametersToLastAddedTask("map-start-position="
-						+ mapFileSection.get("startPositionLat") + ","
+				appendParametersToLastAddedTask("map-start-position=" + mapFileSection.get("startPositionLat") + ","
 						+ mapFileSection.get("startPositionLon"));
 			}
 
+			if (mapFileSection.getBoolean("enableCustomBB")) {
+				appendParametersToLastAddedTask("bbox=" + mapFileSection.get("BBMinLat") + ","
+						+ mapFileSection.get("BBMinLon") + "," + mapFileSection.get("BBMaxLat") + ","
+						+ mapFileSection.get("BBMaxLon"));
+			}
+
 			if (mapFileSection.getBoolean("enableCustomStartZoomLevel")) {
-				appendParametersToLastAddedTask("map-start-zoom="
-						+ mapFileSection.get("mapZoomLevel"));
+				appendParametersToLastAddedTask("map-start-zoom=" + mapFileSection.get("mapZoomLevel"));
 			}
 
 			if (mapFileSection.getBoolean("enableCustomTagConfig")) {
-				appendParametersToLastAddedTask("tag-conf-file="
-						+ mapFileSection.get("tagConfigurationFilePath"));
+				appendParametersToLastAddedTask("tag-conf-file=" + mapFileSection.get("tagConfigurationFilePath"));
 			}
 
-			if (mapFileSection.get("comment") != null
-					&& !mapFileSection.get("comment").isEmpty()) {
-				appendParametersToLastAddedTask("comment="
-						+ mapFileSection.get("comment"));
+			if (mapFileSection.get("comment") != null && !mapFileSection.get("comment").isEmpty()) {
+				appendParametersToLastAddedTask("comment=" + mapFileSection.get("comment"));
 			}
 
+		}
+
+	}
+
+	// XXX debug only
+	public void printDebugInfo() {
+		TaskConfiguration conf = this.getTaskConfigurations().get(1);
+		System.out.println("============================");
+		System.out.println("Default arg: " + conf.getDefaultArg());
+		for (String key : conf.getConfigArgs().keySet()) {
+			System.out.println(key + " => " + conf.getConfigArgs().get(key));
 		}
 	}
 
 	private static String taskTypeToOsmosisString(TaskType taskType) {
 		switch (taskType) {
-		case READ_BINARY:
-			return "rb";
-		case READ_XML:
-			return "rx";
-		case MAP_WRITER:
-			// XXX revert back to 'mw' when merging with trunk
-			return "mw2";
-		case POI_WRITER:
-			return "poi-writer";
-		default:
-			return "";
+			case READ_BINARY:
+				return "rb";
+			case READ_XML:
+				return "rx";
+			case MAP_WRITER:
+				// XXX revert back to 'mw' when merging with trunk
+				return "mw2";
+			case POI_WRITER:
+				return "poi-writer";
+			default:
+				return "";
 		}
 	}
 }

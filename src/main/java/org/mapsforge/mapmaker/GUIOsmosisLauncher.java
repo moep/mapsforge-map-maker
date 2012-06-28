@@ -70,6 +70,7 @@ public class GUIOsmosisLauncher {
 			@Override
 			public void run() {
 				System.out.println("[OsmosisThread] Started");
+				builder.printDebugInfo();
 				System.out.println("[OsmosisThread] # Tasks: " + builder.getTaskConfigurations().size());
 				ProgressManager pm = ProgressGUI.getInstance();
 				System.out.println("Progress manager (GUI): " + pm);
@@ -117,19 +118,23 @@ public class GUIOsmosisLauncher {
 
 		System.out.println("[Map File Settings]");
 		IDialogSettings mapFileSection = settings.getSection(MapFileWizardPage.getSettingsSectionName());
-		System.out.println("Map File path: " + mapFileSection.getBoolean("mapFilePath"));
+		System.out.println("Map File path: " + mapFileSection.get("mapFilePath"));
 		System.out.println("Enable HDD cache: " + mapFileSection.getBoolean("enableHDDCache"));
 		System.out.println("Enable custom start position: " + mapFileSection.getBoolean("enableCustomStartPosition"));
+
 		if (mapFileSection.getBoolean("enableCustomStartPosition") == true) {
 			System.out.println("  [*] Latitude / Longitude: " + mapFileSection.getInt("startPositionLat") + " / "
 					+ mapFileSection.getInt("startPositionLat"));
 		}
 		System.out
-				.println("Enable custom start zoom level: " + mapFileSection.getBoolean("enableCustomStartZoomLevel"));
+
+		.println("Enable custom start zoom level: " + mapFileSection.getBoolean("enableCustomStartZoomLevel"));
 		System.out.println("Enable custom tag config: " + mapFileSection.getBoolean("enableCustomTagConfig"));
+
 		if (mapFileSection.getBoolean("enableCustomTagConfig")) {
 			System.out.println("  [*] Tag configuration file path: " + mapFileSection.get("tagConfigurationFilePath"));
 		}
+
 		System.out.println("Enable polygon clipping: " + mapFileSection.getBoolean("enablePolygonClipping"));
 		System.out.println("Enable way clipping: " + mapFileSection.getBoolean("enableWayClipping"));
 		System.out.println("Compute label positions: " + mapFileSection.getBoolean("computeLabelPositions"));
@@ -137,11 +142,13 @@ public class GUIOsmosisLauncher {
 
 		System.out
 				.println("Enable custom start zoom level: " + mapFileSection.getBoolean("enableCustomStartZoomLevel"));
+
 		if (mapFileSection.getBoolean("enableCustomStartZoomLevel")) {
 			System.out.println("" + mapFileSection.getInt("mapZoomLevel"));
 		}
+
 		System.out.println("Preferred language: " + mapFileSection.get("preferredLanguage"));
-		System.out.println("Comment: " + mapFileSection.getBoolean("comment"));
+		System.out.println("Comment: " + mapFileSection.get("comment"));
 		System.out.println("Simplification factor: " + (mapFileSection.getInt("simplificationFactor") * 0.01));
 		System.out.println("Bounding box enlargement" + mapFileSection.getBoolean("BBEnlargement"));
 		System.out.println("Zoom interval configuration: " + mapFileSection.get("zoomIntervalConfiguration"));

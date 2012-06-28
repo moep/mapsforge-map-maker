@@ -16,7 +16,7 @@
 	<artifactId>mapsforge-map-maker</artifactId>
 	<packaging>jar</packaging>
 	<name>mapsforge-map-maker</name>
-	<version>0.1.0</version>
+	<version>0.1.1</version>
 	<description>A GUI for easy creation of mapsforge data.</description>
 
 	<properties>
